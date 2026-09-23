@@ -1,0 +1,7 @@
+{
+  "name": "MT5 XAUUSD Web Trader & Bot Engine",
+  "description": "Terminal web profissional e automatizador de ordens para MetaTrader 5 focado em XAUUSD (Ouro), com conexão direta à corretora, gestão de risco e gerador de prompts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
