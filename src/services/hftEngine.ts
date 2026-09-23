@@ -16,7 +16,7 @@ export const DEFAULT_HFT_LIMITS: HFTRiskLimits = {
   maxDailyLossUsd: 150.0,
   maxDrawdownPct: 0.05, // 5%
   maxOrderNotionalUsd: 1000.0,
-  maxSpreadPips: 3.5,
+  maxSpreadPips: 15.0, // Spread Máximo 15
   maxInventoryLots: 0.50,
   maxDecisionLatencyMs: 350.0,
   asGamma: 0.10, // risk aversion

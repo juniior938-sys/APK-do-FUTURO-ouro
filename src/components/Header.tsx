@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  ShieldCheck,
   Wifi,
   WifiOff,
   AlertTriangle,
@@ -12,8 +11,6 @@ import {
   BarChart3,
   Smartphone,
   Layers,
-  Lock,
-  Github,
 } from 'lucide-react';
 import { AccountInfo, ConnectionStatus } from '../types/mt5';
 import { EXNESS_ACCOUNT_SPECS } from '../utils/goldMath';
@@ -26,10 +23,8 @@ export interface HeaderProps {
   onTabChange: (tab: 'hft' | 'terminal' | 'bot' | 'prompt' | 'bridge') => void;
   onOpenBrokerConfig: () => void;
   onOpenDailyReport?: () => void;
-  onOpenStealthShield?: () => void;
   onOpenPairsModal?: () => void;
   onOpenAndroidApk?: () => void;
-  onOpenGitHubSync?: () => void;
   onEmergencyFlatten: () => void;
   hasOpenPositions: boolean;
   isHftRunning?: boolean;
@@ -44,15 +39,12 @@ export const Header: React.FC<HeaderProps> = ({
   onTabChange,
   onOpenBrokerConfig,
   onOpenDailyReport,
-  onOpenStealthShield,
   onOpenPairsModal,
   onOpenAndroidApk,
-  onOpenGitHubSync,
   onEmergencyFlatten,
   hasOpenPositions,
   isHftRunning,
   activeSymbol,
-  isStealthShieldActive = true,
 }) => {
   const accountSpec = account.accountType ? EXNESS_ACCOUNT_SPECS[account.accountType] : undefined;
   const currentSymbolSpec = getSymbolSpec(activeSymbol);
@@ -70,16 +62,6 @@ export const Header: React.FC<HeaderProps> = ({
               <h1 className="text-sm sm:text-base font-bold tracking-tight text-white flex items-center gap-1.5">
                 MT5 Algo Scalper
               </h1>
-              {isStealthShieldActive && (
-                <span
-                  onClick={onOpenStealthShield}
-                  className="hidden xs:inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold cursor-pointer hover:bg-emerald-500/25 transition-colors"
-                  title="Blindagem Anti-Bloqueio Ativa"
-                >
-                  <Lock className="w-2.5 h-2.5" />
-                  <span>BLINDADO</span>
-                </span>
-              )}
             </div>
             <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1.5 flex-wrap">
               <span className="text-slate-200 font-medium">{account.broker || 'Corretora MT5'}</span>
@@ -180,19 +162,6 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* Blindagem Anti-Bloqueio Button */}
-          {onOpenStealthShield && (
-            <button
-              type="button"
-              onClick={onOpenStealthShield}
-              className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/40 text-emerald-300 transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm shadow-emerald-950/50"
-              title="Configurar Blindagem Anti-Bloqueio e Stops Virtuais"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-              <span className="hidden md:inline">Blindagem</span>
-            </button>
-          )}
-
           {/* Android APK Button */}
           {onOpenAndroidApk && (
             <button
@@ -203,19 +172,6 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Smartphone className="w-3.5 h-3.5 text-sky-400" />
               <span className="hidden sm:inline">APK Android</span>
-            </button>
-          )}
-
-          {/* GitHub Sync Button */}
-          {onOpenGitHubSync && (
-            <button
-              type="button"
-              onClick={onOpenGitHubSync}
-              className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800/90 hover:bg-slate-700 border border-slate-600 text-white transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm"
-              title="Enviar repositório para o GitHub / Baixar .ZIP"
-            >
-              <Github className="w-3.5 h-3.5 text-white" />
-              <span className="hidden sm:inline">GitHub</span>
             </button>
           )}
 

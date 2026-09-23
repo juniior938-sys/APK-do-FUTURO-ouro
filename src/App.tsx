@@ -57,10 +57,8 @@ import { PromptCorrectionTab } from './components/PromptCorrectionTab';
 import { Mt5BridgeCodeModal } from './components/Mt5BridgeCodeModal';
 import { HFTCockpit } from './components/HFTCockpit';
 import { DailyPerformanceModal } from './components/DailyPerformanceModal';
-import { StealthShieldModal } from './components/StealthShieldModal';
 import { AndroidApkModal } from './components/AndroidApkModal';
 import { PairSelectorModal } from './components/PairSelector';
-import { GitHubSyncModal } from './components/GitHubSyncModal';
 import { StealthShieldConfig, DEFAULT_STEALTH_SHIELD } from './types/stealth';
 import { SUPPORTED_SYMBOLS, getSymbolSpec, SymbolSpec } from './types/symbols';
 
@@ -126,20 +124,22 @@ export default function App() {
   const [symbol, setSymbol] = useState<string>(currentSpec.symbol);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connected');
   const [isDailyReportModalOpen, setIsDailyReportModalOpen] = useState<boolean>(false);
-  const [isStealthShieldModalOpen, setIsStealthShieldModalOpen] = useState<boolean>(false);
   const [isAndroidApkModalOpen, setIsAndroidApkModalOpen] = useState<boolean>(false);
   const [isPairsModalOpen, setIsPairsModalOpen] = useState<boolean>(false);
-  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState<boolean>(false);
 
-  // Stealth Shield State (Anti-bloqueio e blindagem do servidor)
-  const [stealthConfig, setStealthConfig] = useState<StealthShieldConfig>(() => {
-    try {
-      const saved = localStorage.getItem('mt5_stealth_shield');
-      return saved ? JSON.parse(saved) : DEFAULT_STEALTH_SHIELD;
-    } catch {
-      return DEFAULT_STEALTH_SHIELD;
-    }
-  });
+  // Stealth Shield State (Anti-bloqueio e blindagem do servidor - 100% nativa e automática)
+  const [stealthConfig, setStealthConfig] = useState<StealthShieldConfig>(() => ({
+    ...DEFAULT_STEALTH_SHIELD,
+    enabled: true,
+    virtualStopsEnabled: true,
+    jitterEnabled: true,
+    spreadSpikeFilter: true,
+    maxAllowedSpreadPips: 15.0, // Spread Máximo 15
+    antiPatternMasking: true,
+    autoHeartbeatRetry: true,
+    proxyFailoverEnabled: true,
+    stealthLevel: 'MAXIMUM_BLINDAGEM',
+  }));
 
   const handleSaveStealthConfig = (newConfig: StealthShieldConfig) => {
     setStealthConfig(newConfig);
@@ -244,7 +244,10 @@ export default function App() {
   // HFT 24/5 ENGINE STATE (Autonomous In-Browser Robot)
   // ===========================================================================
   const [isHftRunning, setIsHftRunning] = useState<boolean>(true); // Auto-starts!
-  const [hftLimits, setHftLimits] = useState<HFTRiskLimits>(DEFAULT_HFT_LIMITS);
+  const [hftLimits, setHftLimits] = useState<HFTRiskLimits>(() => ({
+    ...DEFAULT_HFT_LIMITS,
+    maxSpreadPips: 15.0,
+  }));
   const [orderBook, setOrderBook] = useState<HFTOrderBook>(() =>
     generateL2Book(2658.45, getExnessSpread(accountType, 0))
   );
@@ -399,13 +402,18 @@ export default function App() {
       );
       setCurrentRung(rung);
 
-      // 7. Execution: Quote Fills & Directional Legs
+      // 7. Execution: Quote Fills & Directional Legs (Com Blindagem Anti-Spike: Spread Máximo 15 pips)
       let fillText: string | undefined = undefined;
       let fillPrice: number | undefined = undefined;
       let fillQty: number | undefined = undefined;
 
+      const isSpreadAboveMax = dynamicSpread > (hftLimits.maxSpreadPips || 15.0);
+      if (isSpreadAboveMax) {
+        action.reason = `Proteção Anti-Spike Ativa: Spread ${dynamicSpread.toFixed(1)} pips > Máximo 15.0 pips (Ordens travadas)`;
+      }
+
       // Handle Directional Leg
-      if (action.direction_leg && positions.length < 4 && rung !== 'KILL' && rung !== 'HOLD_LATE') {
+      if (!isSpreadAboveMax && action.direction_leg && positions.length < 4 && rung !== 'KILL' && rung !== 'HOLD_LATE') {
         const side = action.direction_leg === 'buy' ? 'BUY' : 'SELL';
         const legPrice = side === 'BUY' ? newBook.asks[0].price : newBook.bids[0].price;
         const volume = currentSpec.isCentAccount ? 1.0 : hftLimits.hftLotSize;
@@ -442,8 +450,9 @@ export default function App() {
         }));
       }
 
-      // Handle Resting Quote Fill simulation (Passive maker executions)
+      // Handle Resting Quote Fill simulation (Passive maker executions - apenas com spread <= 15)
       if (
+        !isSpreadAboveMax &&
         (action.kind === 'QUOTE_BOTH_SIDES' || action.kind === 'QUOTE_WIDE') &&
         Math.random() < 0.18 &&
         positions.length < 5
@@ -767,10 +776,8 @@ export default function App() {
         onTabChange={setActiveTab}
         onOpenBrokerConfig={() => setIsBrokerModalOpen(true)}
         onOpenDailyReport={() => setIsDailyReportModalOpen(true)}
-        onOpenStealthShield={() => setIsStealthShieldModalOpen(true)}
         onOpenPairsModal={() => setIsPairsModalOpen(true)}
         onOpenAndroidApk={() => setIsAndroidApkModalOpen(true)}
-        onOpenGitHubSync={() => setIsGitHubModalOpen(true)}
         onEmergencyFlatten={handleEmergencyFlatten}
         hasOpenPositions={positions.length > 0}
         isHftRunning={isHftRunning}
@@ -810,10 +817,8 @@ export default function App() {
               accountType={accountType}
               onSelectAccountType={handleSelectAccountType}
               onOpenDailyReport={() => setIsDailyReportModalOpen(true)}
-              onOpenStealthShield={() => setIsStealthShieldModalOpen(true)}
               onOpenPairsModal={() => setIsPairsModalOpen(true)}
               onOpenAndroidApk={() => setIsAndroidApkModalOpen(true)}
-              onOpenGitHubSync={() => setIsGitHubModalOpen(true)}
               activeSymbol={activeSymbol}
               onSelectSymbol={handleSelectSymbol}
               stealthConfig={stealthConfig}
@@ -945,15 +950,6 @@ export default function App() {
         currentPrice={currentPrice}
       />
 
-      {/* Blindagem de Servidor & Anti-Bloqueio Modal */}
-      <StealthShieldModal
-        isOpen={isStealthShieldModalOpen}
-        onClose={() => setIsStealthShieldModalOpen(false)}
-        config={stealthConfig}
-        onSave={handleSaveStealthConfig}
-        currentSpread={spreadPips}
-      />
-
       {/* Aplicativo Android APK & WebAPK Modal */}
       <AndroidApkModal
         isOpen={isAndroidApkModalOpen}
@@ -968,12 +964,6 @@ export default function App() {
         onSelectSymbol={handleSelectSymbol}
         allowedSymbols={allowedSymbols}
         onToggleAllowedSymbol={handleToggleAllowedSymbol}
-      />
-
-      {/* Guia de Envio para o GitHub & Download .ZIP */}
-      <GitHubSyncModal
-        isOpen={isGitHubModalOpen}
-        onClose={() => setIsGitHubModalOpen(false)}
       />
     </div>
   );

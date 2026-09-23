@@ -31,7 +31,6 @@ import {
   FileText,
   Lock,
   Smartphone,
-  Github,
 } from 'lucide-react';
 
 interface HFTCockpitProps {
@@ -51,10 +50,8 @@ interface HFTCockpitProps {
   accountType?: ExnessAccountType;
   onSelectAccountType?: (type: ExnessAccountType) => void;
   onOpenDailyReport?: () => void;
-  onOpenStealthShield?: () => void;
   onOpenPairsModal?: () => void;
   onOpenAndroidApk?: () => void;
-  onOpenGitHubSync?: () => void;
   activeSymbol?: string;
   onSelectSymbol?: (symbol: string) => void;
   stealthConfig?: StealthShieldConfig;
@@ -77,10 +74,8 @@ export const HFTCockpit: React.FC<HFTCockpitProps> = ({
   accountType = 'raw_spread',
   onSelectAccountType,
   onOpenDailyReport,
-  onOpenStealthShield,
   onOpenPairsModal,
   onOpenAndroidApk,
-  onOpenGitHubSync,
   activeSymbol = 'XAUUSD',
   onSelectSymbol,
   stealthConfig,
@@ -240,73 +235,30 @@ export const HFTCockpit: React.FC<HFTCockpitProps> = ({
               </button>
             )}
 
-            {/* GitHub Export Button */}
-            {onOpenGitHubSync && (
-              <button
-                type="button"
-                onClick={onOpenGitHubSync}
-                className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm whitespace-nowrap"
-                title="Enviar para o GitHub ou Baixar Código em .ZIP"
-              >
-                <Github className="w-4 h-4 text-white" />
-                <span>Enviar p/ GitHub</span>
-              </button>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Bar: Active Pair Selection & Anti-Blocking / Blindagem Status */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 space-y-3 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
-          {/* Pair Selector */}
-          <div className="flex-1 min-w-0">
-            <PairSelector
-              activeSymbol={activeSymbol}
-              onSelectSymbol={onSelectSymbol || (() => {})}
-            />
-          </div>
-
-          {/* Blindagem / Anti-Blocking Widget Button */}
-          {onOpenStealthShield && (
-            <button
-              type="button"
-              onClick={onOpenStealthShield}
-              className="px-3.5 py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/40 text-emerald-300 flex items-center justify-between gap-3 text-xs font-medium transition-all shrink-0 cursor-pointer shadow-sm"
-              title="Configurar Blindagem do Servidor e Stops Invisíveis"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="font-bold text-white">Blindagem do Servidor:</span>
-                <span className="font-mono text-emerald-300 text-[11px]">
-                  {stealthConfig?.enabled !== false ? 'PROTEÇÃO MÁXIMA ATIVA' : 'PAUSADO'}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 font-mono">
-                <Lock className="w-3 h-3 text-emerald-400" />
-                <span>Stops Virtuais + Jitter + Anti-Spike</span>
-              </div>
-            </button>
-          )}
+      {/* Bar: Active Pair Selection & Automatic Stealth Shield Status */}
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        {/* Pair Selector */}
+        <div className="flex-1 min-w-0">
+          <PairSelector
+            activeSymbol={activeSymbol}
+            onSelectSymbol={onSelectSymbol || (() => {})}
+          />
         </div>
 
-        {/* Micro-Features of the Shield summary */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
-          <div className="p-2 rounded-lg bg-slate-950/50 border border-slate-800/70 flex items-center gap-2">
-            <span className="text-amber-400 font-bold">1. Stop Oculto:</span>
-            <span className="text-emerald-400">Invisível no L2</span>
+        {/* Automatic Stealth & Max Spread Badge */}
+        <div className="flex items-center gap-2 text-xs shrink-0 self-end md:self-center font-mono">
+          <div className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-semibold">Blindagem Automática:</span>
+            <span className="text-[11px] text-emerald-400">Stops Virtuais & Anti-Bloqueio</span>
           </div>
-          <div className="p-2 rounded-lg bg-slate-950/50 border border-slate-800/70 flex items-center gap-2">
-            <span className="text-sky-400 font-bold">2. Anti-Detecção:</span>
-            <span className="text-emerald-400">Jitter +18~42ms</span>
-          </div>
-          <div className="p-2 rounded-lg bg-slate-950/50 border border-slate-800/70 flex items-center gap-2">
-            <span className="text-purple-400 font-bold">3. Anti-Spike:</span>
-            <span className="text-emerald-400">Filtro de Spread</span>
-          </div>
-          <div className="p-2 rounded-lg bg-slate-950/50 border border-slate-800/70 flex items-center gap-2">
-            <span className="text-emerald-400 font-bold">4. Conexão:</span>
-            <span className="text-emerald-400">Heartbeat Ativo</span>
+          <div className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 flex items-center gap-1">
+            <span className="font-semibold text-slate-300">Spread Máx:</span>
+            <b className="text-amber-400 font-bold">{limits.maxSpreadPips.toFixed(1)} pips</b>
           </div>
         </div>
       </div>

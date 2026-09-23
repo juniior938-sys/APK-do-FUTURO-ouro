@@ -25,7 +25,7 @@ export const DEFAULT_STEALTH_SHIELD: StealthShieldConfig = {
   minJitterMs: 14,
   maxJitterMs: 48,
   spreadSpikeFilter: true,
-  maxAllowedSpreadPips: 3.5,
+  maxAllowedSpreadPips: 15.0, // Spread Máximo 15
   antiPatternMasking: true,
   autoHeartbeatRetry: true,
   proxyFailoverEnabled: true,
