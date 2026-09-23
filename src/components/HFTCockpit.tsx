@@ -31,6 +31,7 @@ import {
   FileText,
   Lock,
   Smartphone,
+  Github,
 } from 'lucide-react';
 
 interface HFTCockpitProps {
@@ -53,6 +54,7 @@ interface HFTCockpitProps {
   onOpenStealthShield?: () => void;
   onOpenPairsModal?: () => void;
   onOpenAndroidApk?: () => void;
+  onOpenGitHubSync?: () => void;
   activeSymbol?: string;
   onSelectSymbol?: (symbol: string) => void;
   stealthConfig?: StealthShieldConfig;
@@ -78,6 +80,7 @@ export const HFTCockpit: React.FC<HFTCockpitProps> = ({
   onOpenStealthShield,
   onOpenPairsModal,
   onOpenAndroidApk,
+  onOpenGitHubSync,
   activeSymbol = 'XAUUSD',
   onSelectSymbol,
   stealthConfig,
@@ -234,6 +237,19 @@ export const HFTCockpit: React.FC<HFTCockpitProps> = ({
               >
                 <Smartphone className="w-4 h-4 text-sky-400" />
                 <span>Instalar APK Android</span>
+              </button>
+            )}
+
+            {/* GitHub Export Button */}
+            {onOpenGitHubSync && (
+              <button
+                type="button"
+                onClick={onOpenGitHubSync}
+                className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm whitespace-nowrap"
+                title="Enviar para o GitHub ou Baixar Código em .ZIP"
+              >
+                <Github className="w-4 h-4 text-white" />
+                <span>Enviar p/ GitHub</span>
               </button>
             )}
           </div>

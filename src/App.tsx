@@ -60,6 +60,7 @@ import { DailyPerformanceModal } from './components/DailyPerformanceModal';
 import { StealthShieldModal } from './components/StealthShieldModal';
 import { AndroidApkModal } from './components/AndroidApkModal';
 import { PairSelectorModal } from './components/PairSelector';
+import { GitHubSyncModal } from './components/GitHubSyncModal';
 import { StealthShieldConfig, DEFAULT_STEALTH_SHIELD } from './types/stealth';
 import { SUPPORTED_SYMBOLS, getSymbolSpec, SymbolSpec } from './types/symbols';
 
@@ -128,6 +129,7 @@ export default function App() {
   const [isStealthShieldModalOpen, setIsStealthShieldModalOpen] = useState<boolean>(false);
   const [isAndroidApkModalOpen, setIsAndroidApkModalOpen] = useState<boolean>(false);
   const [isPairsModalOpen, setIsPairsModalOpen] = useState<boolean>(false);
+  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState<boolean>(false);
 
   // Stealth Shield State (Anti-bloqueio e blindagem do servidor)
   const [stealthConfig, setStealthConfig] = useState<StealthShieldConfig>(() => {
@@ -768,6 +770,7 @@ export default function App() {
         onOpenStealthShield={() => setIsStealthShieldModalOpen(true)}
         onOpenPairsModal={() => setIsPairsModalOpen(true)}
         onOpenAndroidApk={() => setIsAndroidApkModalOpen(true)}
+        onOpenGitHubSync={() => setIsGitHubModalOpen(true)}
         onEmergencyFlatten={handleEmergencyFlatten}
         hasOpenPositions={positions.length > 0}
         isHftRunning={isHftRunning}
@@ -810,6 +813,7 @@ export default function App() {
               onOpenStealthShield={() => setIsStealthShieldModalOpen(true)}
               onOpenPairsModal={() => setIsPairsModalOpen(true)}
               onOpenAndroidApk={() => setIsAndroidApkModalOpen(true)}
+              onOpenGitHubSync={() => setIsGitHubModalOpen(true)}
               activeSymbol={activeSymbol}
               onSelectSymbol={handleSelectSymbol}
               stealthConfig={stealthConfig}
@@ -964,6 +968,12 @@ export default function App() {
         onSelectSymbol={handleSelectSymbol}
         allowedSymbols={allowedSymbols}
         onToggleAllowedSymbol={handleToggleAllowedSymbol}
+      />
+
+      {/* Guia de Envio para o GitHub & Download .ZIP */}
+      <GitHubSyncModal
+        isOpen={isGitHubModalOpen}
+        onClose={() => setIsGitHubModalOpen(false)}
       />
     </div>
   );

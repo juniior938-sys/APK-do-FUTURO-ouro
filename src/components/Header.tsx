@@ -13,6 +13,7 @@ import {
   Smartphone,
   Layers,
   Lock,
+  Github,
 } from 'lucide-react';
 import { AccountInfo, ConnectionStatus } from '../types/mt5';
 import { EXNESS_ACCOUNT_SPECS } from '../utils/goldMath';
@@ -28,6 +29,7 @@ export interface HeaderProps {
   onOpenStealthShield?: () => void;
   onOpenPairsModal?: () => void;
   onOpenAndroidApk?: () => void;
+  onOpenGitHubSync?: () => void;
   onEmergencyFlatten: () => void;
   hasOpenPositions: boolean;
   isHftRunning?: boolean;
@@ -45,6 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenStealthShield,
   onOpenPairsModal,
   onOpenAndroidApk,
+  onOpenGitHubSync,
   onEmergencyFlatten,
   hasOpenPositions,
   isHftRunning,
@@ -200,6 +203,19 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Smartphone className="w-3.5 h-3.5 text-sky-400" />
               <span className="hidden sm:inline">APK Android</span>
+            </button>
+          )}
+
+          {/* GitHub Sync Button */}
+          {onOpenGitHubSync && (
+            <button
+              type="button"
+              onClick={onOpenGitHubSync}
+              className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800/90 hover:bg-slate-700 border border-slate-600 text-white transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm"
+              title="Enviar repositório para o GitHub / Baixar .ZIP"
+            >
+              <Github className="w-3.5 h-3.5 text-white" />
+              <span className="hidden sm:inline">GitHub</span>
             </button>
           )}
 
