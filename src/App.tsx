@@ -814,6 +814,8 @@ export default function App() {
               onKillSwitch={handleEmergencyFlatten}
               inventoryLots={inventoryLots}
               floatingPnl={account.floatingProfit}
+              dailyClosedProfit={account.closedProfitToday}
+              connectionStatus={connectionStatus}
               accountType={accountType}
               onSelectAccountType={handleSelectAccountType}
               onOpenDailyReport={() => setIsDailyReportModalOpen(true)}

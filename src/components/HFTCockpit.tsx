@@ -8,10 +8,10 @@ import {
   HFTStats,
   HFTRiskLimits,
 } from '../types/hft';
-import { ExnessAccountType } from '../types/mt5';
+import { ExnessAccountType, ConnectionStatus } from '../types/mt5';
 import { StealthShieldConfig } from '../types/stealth';
 import { PairSelector } from './PairSelector';
-import { formatGoldPrice, formatUsd, EXNESS_ACCOUNT_SPECS } from '../utils/goldMath';
+import { formatUsd, EXNESS_ACCOUNT_SPECS } from '../utils/goldMath';
 import {
   Zap,
   Play,
@@ -19,18 +19,15 @@ import {
   AlertOctagon,
   ShieldCheck,
   TrendingUp,
+  TrendingDown,
   Activity,
-  Layers,
-  Gauge,
-  Sliders,
-  CheckCircle2,
+  Wifi,
   Clock,
-  ArrowUp,
-  ArrowDown,
-  Building2,
+  ArrowUpRight,
+  ArrowDownRight,
   FileText,
-  Lock,
   Smartphone,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface HFTCockpitProps {
@@ -47,6 +44,8 @@ interface HFTCockpitProps {
   onKillSwitch: () => void;
   inventoryLots: number;
   floatingPnl: number;
+  dailyClosedProfit?: number;
+  connectionStatus?: ConnectionStatus;
   accountType?: ExnessAccountType;
   onSelectAccountType?: (type: ExnessAccountType) => void;
   onOpenDailyReport?: () => void;
@@ -65,496 +64,335 @@ export const HFTCockpit: React.FC<HFTCockpitProps> = ({
   currentAction,
   currentRung,
   stats,
-  tickHistory,
   limits,
   onUpdateLimits,
   onKillSwitch,
   inventoryLots,
   floatingPnl,
+  dailyClosedProfit = 0,
+  connectionStatus = 'connected',
   accountType = 'raw_spread',
   onSelectAccountType,
   onOpenDailyReport,
-  onOpenPairsModal,
   onOpenAndroidApk,
   activeSymbol = 'XAUUSD',
   onSelectSymbol,
-  stealthConfig,
 }) => {
-  const isKill = currentRung === 'KILL' || currentAction.kind === 'KILL';
   const currentSpec = EXNESS_ACCOUNT_SPECS[accountType] || EXNESS_ACCOUNT_SPECS.raw_spread;
+  const totalDailyPnl = (dailyClosedProfit || 0) + (floatingPnl || 0);
+  const isPnlPositive = totalDailyPnl >= 0;
 
-  // Helper colors for action
-  const getActionColor = (kind: HFTAction['kind']) => {
-    switch (kind) {
-      case 'QUOTE_BOTH_SIDES':
-        return 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300';
-      case 'QUOTE_WIDE':
-        return 'bg-blue-500/15 border-blue-500/40 text-blue-300';
-      case 'WIDEN':
-        return 'bg-amber-500/15 border-amber-500/40 text-amber-300';
-      case 'PULL_QUOTES':
-        return 'bg-purple-500/15 border-purple-500/40 text-purple-300';
-      case 'STAND_DOWN':
-        return 'bg-slate-800 border-slate-700 text-slate-400';
-      case 'KILL':
-        return 'bg-rose-500/20 border-rose-500/50 text-rose-300 animate-pulse';
-    }
-  };
+  // Best Bid & Ask
+  const bestBid = orderBook.bids[0]?.price ?? orderBook.mid - 0.15;
+  const bestAsk = orderBook.asks[0]?.price ?? orderBook.mid + 0.15;
 
-  const getRungColor = (rung: LadderRung) => {
-    switch (rung) {
-      case 'RUN':
-        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-      case 'REDUCE':
-        return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-      case 'HOLD_LATE':
-        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-      case 'RULES_ONLY':
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case 'KILL':
-        return 'bg-rose-500/20 text-rose-300 border-rose-500/40';
-    }
-  };
+  // Direction Helper
+  const isDirectionUp = battery.direction.choice === 'up';
+  const isDirectionDown = battery.direction.choice === 'down';
 
   return (
-    <div className="space-y-4 text-xs font-sans">
-      {/* Top Banner: Master HFT Control & Autonomous Mode */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div
-              className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
-                isHftRunning
-                  ? 'bg-amber-500/20 border border-amber-500/40 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.25)]'
-                  : 'bg-slate-800 border border-slate-700 text-slate-400'
-              }`}
-            >
-              <Zap className="w-6 h-6 fill-current" />
+    <div className="space-y-4 font-sans select-none">
+      {/* ── BENTO GRID COMPACTO ── */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
+        
+        {/* CARD 1: PnL DIÁRIO (Destaque Principal) */}
+        <div className="md:col-span-5 bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                PnL Diário (Resultado Total)
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800/80 text-slate-300 border border-slate-700/60">
+                Hoje
+              </span>
             </div>
-
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white tracking-tight">
-                  Motor de HFT XAUUSD (100% Automático no Navegador)
-                </h2>
-                <span
-                  className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${getRungColor(
-                    currentRung
-                  )}`}
-                >
-                  DEGRAU: {currentRung}
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Loop de microestrutura de alta frequência · Bateria de 7 Julgamentos · Pricing Avellaneda-Stoikov
-              </p>
+            <div className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg border ${
+              isPnlPositive 
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
+                : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+            }`}>
+              {isPnlPositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+              <span>{isPnlPositive ? 'LUCRO' : 'LOSS'}</span>
             </div>
           </div>
 
-          {/* Speed & Master Switch */}
-          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-            {/* Speed selector */}
-            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <div className="my-3">
+            <div className={`text-3xl sm:text-4xl font-black font-mono tracking-tight ${
+              isPnlPositive ? 'text-emerald-400' : 'text-rose-400'
+            }`}>
+              {totalDailyPnl > 0 ? `+${formatUsd(totalDailyPnl)}` : formatUsd(totalDailyPnl)}
+            </div>
+            <div className="flex items-center gap-4 mt-2 text-xs font-mono text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 text-[11px]">Flutuante:</span>
+                <span className={`font-bold ${floatingPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {floatingPnl > 0 ? `+${formatUsd(floatingPnl)}` : formatUsd(floatingPnl)}
+                </span>
+              </div>
+              <div className="text-slate-700">|</div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 text-[11px]">Realizado:</span>
+                <span className={`font-bold ${dailyClosedProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {dailyClosedProfit > 0 ? `+${formatUsd(dailyClosedProfit)}` : formatUsd(dailyClosedProfit)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+            <span className="flex items-center gap-1 text-slate-500">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              Blindagem de Conta Ativa
+            </span>
+            <span className="font-mono text-slate-400">
+              Fills: <b className="text-slate-200">{stats.fillsCount}</b>
+            </span>
+          </div>
+        </div>
+
+        {/* CARD 2: STATUS DE CONEXÃO & CONTROLE DO MOTOR HFT */}
+        <div className="md:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              Status & Conexão
+            </span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 font-mono text-[11px]">
+              <span className={`w-2 h-2 rounded-full ${
+                connectionStatus === 'connected' ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'
+              }`} />
+              <span className="text-slate-200 uppercase font-bold text-[10px]">
+                {connectionStatus === 'connected' ? 'ONLINE' : 'OFFLINE'}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 my-2 font-mono">
+            <div className="bg-slate-950/70 p-2 rounded-xl border border-slate-800/70 text-center">
+              <span className="text-[10px] text-slate-500 block">Par</span>
+              <b className="text-amber-400 text-xs">{activeSymbol}</b>
+            </div>
+            <div className="bg-slate-950/70 p-2 rounded-xl border border-slate-800/70 text-center">
+              <span className="text-[10px] text-slate-500 block">Degrau</span>
+              <b className={`text-xs ${
+                currentRung === 'RUN' ? 'text-emerald-400' : 'text-amber-400'
+              }`}>{currentRung}</b>
+            </div>
+            <div className="bg-slate-950/70 p-2 rounded-xl border border-slate-800/70 text-center">
+              <span className="text-[10px] text-slate-500 block">Latência</span>
+              <b className="text-slate-200 text-xs">~{stats.avgLatencyMs.toFixed(0)}ms</b>
+            </div>
+          </div>
+
+          {/* Master Start/Pause Button */}
+          <button
+            type="button"
+            onClick={onToggleHft}
+            className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
+              isHftRunning
+                ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40'
+                : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black shadow-emerald-500/20'
+            }`}
+          >
+            {isHftRunning ? (
+              <>
+                <Square className="w-3.5 h-3.5 fill-current" />
+                <span>Pausar Motor HFT</span>
+              </>
+            ) : (
+              <>
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Iniciar Motor HFT</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* CARD 3: BOTÃO DE EMERGÊNCIA (KILL SWITCH) */}
+        <div className="md:col-span-3 bg-gradient-to-br from-rose-950/40 to-slate-900 border border-rose-900/40 rounded-2xl p-5 flex flex-col justify-between shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
+              <AlertOctagon className="w-3.5 h-3.5 text-rose-400" />
+              Botão de Emergência
+            </span>
+          </div>
+
+          <p className="text-[11px] text-slate-400 my-1 leading-snug">
+            Cancela cotações ativas e fecha todas as ordens imediatamente no clique.
+          </p>
+
+          <button
+            type="button"
+            onClick={onKillSwitch}
+            className="w-full py-3 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-[0.98] text-white font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-rose-900/40"
+            title="Zerar todas as ordens e posições abertas agora"
+          >
+            <AlertOctagon className="w-4 h-4 fill-white/20" />
+            <span>KILL SWITCH · ZERAR</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── SEGUNDA LINHA BENTO: PREÇO, SPREAD & AÇÃO ATUAL DO ROBÔ ── */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
+        
+        {/* CARD 4: COTAÇÃO REAL & SPREAD */}
+        <div className="md:col-span-6 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2 mb-2.5">
+            <div className="flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-bold text-slate-200">{activeSymbol} Cotação em Tempo Real</span>
+            </div>
+            
+            <div className="flex items-center gap-2 font-mono text-[11px]">
+              <span className="text-slate-400">Spread:</span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold">
+                {orderBook.spreadPips.toFixed(1)} pips
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 font-mono">
+            <div className="bg-slate-950/80 border border-slate-800 p-2.5 rounded-xl">
+              <span className="text-[10px] text-emerald-400/80 uppercase font-sans font-semibold block">Compra (Bid)</span>
+              <span className="text-lg sm:text-xl font-bold text-emerald-400 tabular-nums">
+                {bestBid.toFixed(2)}
+              </span>
+            </div>
+            <div className="bg-slate-950/80 border border-slate-800 p-2.5 rounded-xl">
+              <span className="text-[10px] text-rose-400/80 uppercase font-sans font-semibold block">Venda (Ask)</span>
+              <span className="text-lg sm:text-xl font-bold text-rose-400 tabular-nums">
+                {bestAsk.toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-800/60 text-[11px]">
+            <span className="text-slate-500 font-sans">Intervalo:</span>
+            <div className="flex items-center gap-1 font-mono">
               {[
-                { label: '200ms (Ultra)', val: 200 },
-                { label: '500ms (Padrão)', val: 500 },
-                { label: '1.0s (Normal)', val: 1000 },
+                { label: '200ms', val: 200 },
+                { label: '500ms', val: 500 },
+                { label: '1.0s', val: 1000 },
               ].map((sp) => (
                 <button
                   key={sp.val}
                   type="button"
                   onClick={() => onUpdateLimits({ ...limits, tickIntervalMs: sp.val })}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-medium transition-colors ${
+                  className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
                     limits.tickIntervalMs === sp.val
                       ? 'bg-amber-500 text-slate-950 font-bold'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'bg-slate-950 text-slate-400 hover:text-slate-200'
                   }`}
                 >
                   {sp.label}
                 </button>
               ))}
             </div>
+          </div>
+        </div>
 
-            {/* Master Toggle */}
-            <button
-              type="button"
-              onClick={onToggleHft}
-              className={`px-6 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md ${
-                isHftRunning
-                  ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/30'
-                  : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-950/40'
-              }`}
-            >
-              {isHftRunning ? (
-                <>
-                  <Square className="w-3.5 h-3.5 fill-current" />
-                  <span>Pausar HFT</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Iniciar HFT Automático</span>
-                </>
-              )}
-            </button>
+        {/* CARD 5: AÇÃO INSTITUCIONAL & MICROESTRUTURA BÁSICA */}
+        <div className="md:col-span-6 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2 mb-2.5">
+            <div className="flex items-center gap-2">
+              <Zap className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-xs font-bold text-slate-200">Decisão Algorítmica Atual</span>
+            </div>
+            <div className="flex items-center gap-1.5 font-mono text-[11px] text-slate-400">
+              <span>Inventário:</span>
+              <b className="text-slate-200">{inventoryLots.toFixed(2)} Lotes</b>
+            </div>
+          </div>
 
-            {/* Emergency Kill Switch */}
-            <button
-              type="button"
-              onClick={onKillSwitch}
-              className="px-3.5 py-2.5 rounded-xl bg-rose-950 hover:bg-rose-900 border border-rose-800/80 text-rose-300 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-              title="Zera imediatamente todas as cotações e lotes abertos"
-            >
-              <AlertOctagon className="w-4 h-4" />
-              <span>KILL / ZERAR</span>
-            </button>
+          <div className="bg-slate-950/80 border border-slate-800 p-2.5 rounded-xl flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold font-mono text-white">
+                  {currentAction.kind.replace(/_/g, ' ')}
+                </span>
+                {currentAction.direction_leg && (
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300">
+                    LEG {currentAction.direction_leg.toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                {currentAction.reason || 'Analisando livro de ordens e microestrutura de mercado...'}
+              </p>
+            </div>
 
-            {/* Daily Performance & 24H Timeline Button */}
-            {onOpenDailyReport && (
-              <button
-                type="button"
-                onClick={onOpenDailyReport}
-                className="px-3.5 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm whitespace-nowrap"
-                title="Abrir Relatório Diário de Performance e Linha do Tempo 24H"
-              >
-                <FileText className="w-4 h-4 text-amber-400" />
-                <span>Relatório & Timeline 24H</span>
-              </button>
-            )}
+            <div className="shrink-0 pl-3">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                isDirectionUp
+                  ? 'bg-emerald-500/20 text-emerald-400'
+                  : isDirectionDown
+                  ? 'bg-rose-500/20 text-rose-400'
+                  : 'bg-slate-800 text-slate-400'
+              }`}>
+                {isDirectionUp ? (
+                  <ArrowUpRight className="w-5 h-5" />
+                ) : isDirectionDown ? (
+                  <ArrowDownRight className="w-5 h-5" />
+                ) : (
+                  <Activity className="w-4 h-4" />
+                )}
+              </div>
+            </div>
+          </div>
 
-            {/* Android APK Button */}
-            {onOpenAndroidApk && (
-              <button
-                type="button"
-                onClick={onOpenAndroidApk}
-                className="px-3.5 py-2.5 rounded-xl bg-sky-950/60 hover:bg-sky-900/70 border border-sky-500/40 text-sky-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm whitespace-nowrap"
-                title="Instalar Aplicativo no Android (APK / WebAPK)"
-              >
-                <Smartphone className="w-4 h-4 text-sky-400" />
-                <span>Instalar APK Android</span>
-              </button>
-            )}
-
+          {/* Minimalist Micro-stats Bar */}
+          <div className="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-slate-800/60 text-[10px] font-mono text-center">
+            <div>
+              <span className="text-slate-500 block font-sans">Regime</span>
+              <span className="text-slate-300 font-bold capitalize">{battery.regime.choice}</span>
+            </div>
+            <div>
+              <span className="text-slate-500 block font-sans">Fluxo Tóxico</span>
+              <span className={`font-bold ${battery.toxic_flow.noul > 0.6 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                {battery.toxic_flow.noul.toFixed(2)}
+              </span>
+            </div>
+            <div>
+              <span className="text-slate-500 block font-sans">Execução Broker</span>
+              <span className="text-slate-300 font-bold">{battery.execution_health.score.toFixed(1)}/3.0</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Bar: Active Pair Selection & Automatic Stealth Shield Status */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
-        {/* Pair Selector */}
-        <div className="flex-1 min-w-0">
+      {/* ── BARRA INFERIOR DISCRETA: PARIDADES & ATALHOS ÚTEIS ── */}
+      <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-2.5 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
+        <div className="flex-1 w-full sm:w-auto overflow-hidden">
           <PairSelector
             activeSymbol={activeSymbol}
             onSelectSymbol={onSelectSymbol || (() => {})}
           />
         </div>
 
-        {/* Automatic Stealth & Max Spread Badge */}
-        <div className="flex items-center gap-2 text-xs shrink-0 self-end md:self-center font-mono">
-          <div className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-semibold">Blindagem Automática:</span>
-            <span className="text-[11px] text-emerald-400">Stops Virtuais & Anti-Bloqueio</span>
-          </div>
-          <div className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 flex items-center gap-1">
-            <span className="font-semibold text-slate-300">Spread Máx:</span>
-            <b className="text-amber-400 font-bold">{limits.maxSpreadPips.toFixed(1)} pips</b>
-          </div>
-        </div>
-      </div>
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          {onOpenDailyReport && (
+            <button
+              type="button"
+              onClick={onOpenDailyReport}
+              className="px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-white font-medium text-[11px] flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5 text-amber-400" />
+              <span>Relatório 24H</span>
+            </button>
+          )}
 
-      {/* Exness Account Type & Real Spread Profile Bar */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 shadow-sm">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
-            <Building2 className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-white text-xs">Exness.com - Perfil de Conta & Spread:</span>
-              <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                {currentSpec.name} ({currentSpec.symbol})
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              {currentSpec.description}
-            </p>
-          </div>
-        </div>
-
-        {/* 1-Click Account Type Buttons */}
-        <div className="flex flex-wrap items-center gap-1.5 w-full lg:w-auto shrink-0">
-          {(['raw_spread', 'zero', 'standard', 'standard_cent', 'pro'] as ExnessAccountType[]).map((type) => {
-            const spec = EXNESS_ACCOUNT_SPECS[type];
-            const isSelected = accountType === type;
-            return (
-              <button
-                key={type}
-                type="button"
-                onClick={() => onSelectAccountType && onSelectAccountType(type)}
-                className={`px-3 py-1.5 rounded-xl border text-[11px] font-medium transition-all flex items-center gap-1.5 ${
-                  isSelected
-                    ? 'border-amber-500/60 bg-amber-500/20 text-white font-bold shadow-sm'
-                    : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                }`}
-              >
-                <span>{spec.name.replace('Exness ', '')}</span>
-                <span className={`text-[10px] font-mono px-1 rounded ${isSelected ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400'}`}>
-                  {spec.typicalSpreadPips.toFixed(1)}p
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Main Grid: L2 Order Book + 7-Question Battery + Real-Time Feed */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left Column (5 Cols): Level 2 Order Book & Avellaneda-Stoikov */}
-        <div className="lg:col-span-5 space-y-4">
-          {/* Level 2 Depth of Market */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-amber-400" />
-                <h3 className="font-bold text-white text-xs uppercase tracking-wide">
-                  Livro de Ofertas L2 (XAUUSD)
-                </h3>
-              </div>
-              <span className="text-[11px] font-mono text-slate-400">
-                Imbalance: <b className={`tabular-nums ${orderBook.imbalance > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{orderBook.imbalance > 0 ? '+' : ''}{(orderBook.imbalance * 100).toFixed(1)}%</b>
-              </span>
-            </div>
-
-            {/* Asks (Sell orders - Red) */}
-            <div className="space-y-1 font-mono text-[11px]">
-              {orderBook.asks.slice().reverse().map((ask, idx) => (
-                <div key={idx} className="relative flex items-center justify-between px-2 py-0.5">
-                  <div
-                    className="absolute right-0 top-0 bottom-0 bg-rose-500/10 rounded"
-                    style={{ width: `${Math.min(100, (ask.size / 6.0) * 100)}%` }}
-                  />
-                  <span className="text-rose-400 font-bold tabular-nums z-10">{ask.price.toFixed(2)}</span>
-                  <span className="text-slate-300 tabular-nums z-10">{ask.size.toFixed(1)} L</span>
-                  <span className="text-slate-500 tabular-nums z-10">{ask.total.toFixed(1)}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Spread Divider */}
-            <div className="my-1.5 py-1.5 px-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between font-mono text-xs">
-              <span className="text-slate-400 font-sans font-medium">Spread XAUUSD:</span>
-              <span className="text-amber-400 font-bold tabular-nums">{orderBook.spreadPips.toFixed(1)} pips (${orderBook.spread.toFixed(2)})</span>
-              <span className="text-slate-500 text-[10px]">Mid {orderBook.mid.toFixed(2)}</span>
-            </div>
-
-            {/* Bids (Buy orders - Green) */}
-            <div className="space-y-1 font-mono text-[11px]">
-              {orderBook.bids.map((bid, idx) => (
-                <div key={idx} className="relative flex items-center justify-between px-2 py-0.5">
-                  <div
-                    className="absolute left-0 top-0 bottom-0 bg-emerald-500/10 rounded"
-                    style={{ width: `${Math.min(100, (bid.size / 6.0) * 100)}%` }}
-                  />
-                  <span className="text-emerald-400 font-bold tabular-nums z-10">{bid.price.toFixed(2)}</span>
-                  <span className="text-slate-300 tabular-nums z-10">{bid.size.toFixed(1)} L</span>
-                  <span className="text-slate-500 tabular-nums z-10">{bid.total.toFixed(1)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Avellaneda-Stoikov & Inventory Skew */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h3 className="font-bold text-white text-xs uppercase tracking-wide flex items-center gap-1.5">
-                <Gauge className="w-4 h-4 text-blue-400" />
-                <span>Pricing Avellaneda-Stoikov</span>
-              </h3>
-              <span className="text-[10px] font-mono text-slate-400">Inventory q: <b>{inventoryLots.toFixed(2)} L</b></span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-              <div className="p-2 bg-slate-950/70 border border-slate-800 rounded-xl">
-                <span className="text-[10px] text-slate-400 font-sans block">Cotação Compra HFT:</span>
-                <span className="text-emerald-400 font-bold text-sm tabular-nums">
-                  {currentAction.bidPrice ? currentAction.bidPrice.toFixed(2) : orderBook.bids[0]?.price.toFixed(2)}
-                </span>
-              </div>
-
-              <div className="p-2 bg-slate-950/70 border border-slate-800 rounded-xl">
-                <span className="text-[10px] text-slate-400 font-sans block">Cotação Venda HFT:</span>
-                <span className="text-rose-400 font-bold text-sm tabular-nums">
-                  {currentAction.askPrice ? currentAction.askPrice.toFixed(2) : orderBook.asks[0]?.price.toFixed(2)}
-                </span>
-              </div>
-            </div>
-
-            {/* Skew Bar */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-400">
-                <span>Vies de Desova (Skew):</span>
-                <span className="font-mono text-amber-400 font-semibold">{currentAction.skew > 0 ? `+${currentAction.skew.toFixed(2)}` : currentAction.skew.toFixed(2)}</span>
-              </div>
-              <div className="h-2 bg-slate-950 rounded-full overflow-hidden relative">
-                <div
-                  className="h-full bg-amber-500 rounded-full transition-all"
-                  style={{ width: `${Math.max(5, (currentAction.skew + 1) * 50)}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column (7 Cols): 7-Question Judgment Battery & Live Tick Stream */}
-        <div className="lg:col-span-7 space-y-4">
-          {/* Current Decision Action Alert */}
-          <div className={`p-4 rounded-2xl border transition-all ${getActionColor(currentAction.kind)}`}>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-              <div>
-                <span className="text-[10px] uppercase font-mono font-bold tracking-wider opacity-80">
-                  Decisão do Motor HFT Atual
-                </span>
-                <div className="text-xl font-bold font-mono tracking-tight mt-0.5 flex items-center gap-2">
-                  <span>{currentAction.kind}</span>
-                  {currentAction.direction_leg && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-slate-950/80 font-mono font-bold text-amber-400">
-                      PERNA {currentAction.direction_leg.toUpperCase()}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="text-left sm:text-right font-mono text-[11px]">
-                <div className="opacity-80 font-sans">Latência de Decisão:</div>
-                <div className="text-sm font-bold tabular-nums text-white">
-                  ~{stats.avgLatencyMs.toFixed(0)} ms
-                </div>
-              </div>
-            </div>
-
-            <p className="text-xs font-sans mt-2 leading-relaxed opacity-90 border-t border-current/20 pt-2">
-              {currentAction.reason}
-            </p>
-          </div>
-
-          {/* The 7-Question Battery Grid */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-            <h3 className="font-bold text-white text-xs uppercase tracking-wide flex items-center justify-between border-b border-slate-800 pb-2">
-              <div className="flex items-center gap-1.5">
-                <Activity className="w-4 h-4 text-emerald-400" />
-                <span>Bateria de 7 Julgamentos (Modelo Jev)</span>
-              </div>
-              <span className="text-[10px] text-slate-500 font-mono">1 chamada · 7 saídas tipadas</span>
-            </h3>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-[11px]">
-              {/* 1. Regime */}
-              <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">1. Regime</span>
-                <b className="text-white capitalize block mt-0.5">{battery.regime.choice}</b>
-                <span className="text-[10px] font-mono text-amber-400">{(battery.regime.confidence * 100).toFixed(0)}% conf</span>
-              </div>
-
-              {/* 2. Direction */}
-              <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">2. Direção</span>
-                <b className={`capitalize block mt-0.5 ${battery.direction.choice === 'up' ? 'text-emerald-400' : battery.direction.choice === 'down' ? 'text-rose-400' : 'text-slate-300'}`}>
-                  {battery.direction.choice.toUpperCase()}
-                </b>
-                <span className="text-[10px] font-mono text-amber-400">{(battery.direction.confidence * 100).toFixed(0)}% conf</span>
-              </div>
-
-              {/* 3. Toxic Flow */}
-              <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">3. Fluxo Tóxico</span>
-                <b className={`block mt-0.5 tabular-nums ${battery.toxic_flow.noul > 0.60 ? 'text-rose-400' : 'text-slate-200'}`}>
-                  {battery.toxic_flow.noul.toFixed(2)}
-                </b>
-                <span className="text-[10px] text-slate-500">{battery.toxic_flow.noul > 0.60 ? 'Alerta sweep' : 'Ruído normal'}</span>
-              </div>
-
-              {/* 4. Liquidity Stress */}
-              <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">4. Estresse Book</span>
-                <b className="text-slate-200 block mt-0.5 tabular-nums">{battery.liquidity_stressed.noul.toFixed(2)}</b>
-                <span className="text-[10px] text-slate-500">{battery.liquidity_stressed.noul > 0.70 ? 'Alarga spread' : 'Book líquido'}</span>
-              </div>
-
-              {/* 5. Quote Environment */}
-              <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">5. Ambiente Cotação</span>
-                <b className="text-amber-400 block mt-0.5 tabular-nums">{battery.quote_environment.score.toFixed(1)} / 3.0</b>
-                <span className="text-[10px] text-slate-500">{battery.quote_environment.legend[Math.round(battery.quote_environment.score).toString()]}</span>
-              </div>
-
-              {/* 6. Inventory Pressure */}
-              <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">6. Pressão Estoque</span>
-                <b className="text-slate-200 block mt-0.5 tabular-nums">{battery.inventory_pressure.score.toFixed(1)} / 3.0</b>
-                <span className="text-[10px] text-slate-500">{battery.inventory_pressure.legend[Math.round(battery.inventory_pressure.score).toString()]}</span>
-              </div>
-
-              {/* 7. Execution Health */}
-              <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800 col-span-2">
-                <span className="text-[10px] text-slate-400 block">7. Saúde Execução Broker</span>
-                <div className="flex items-center justify-between mt-0.5">
-                  <b className="text-emerald-400 tabular-nums">{battery.execution_health.score.toFixed(1)} / 3.0</b>
-                  <span className="text-[10px] font-mono text-slate-400">Latência: ~{stats.avgLatencyMs.toFixed(0)}ms</span>
-                </div>
-                <span className="text-[10px] text-slate-500">{battery.execution_health.legend[Math.round(battery.execution_health.score).toString()]}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Live Tick-by-Tick Feed */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h3 className="font-bold text-white text-xs uppercase tracking-wide flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-slate-400" />
-                <span>Feed de Ticks HFT em Tempo Real</span>
-              </h3>
-              <span className="text-[10px] font-mono text-slate-500">
-                {stats.ticksCount} ticks processados · {stats.fillsCount} fills executados
-              </span>
-            </div>
-
-            <div className="max-h-48 overflow-y-auto space-y-1 font-mono text-[11px]">
-              {tickHistory.slice(0, 15).map((t) => (
-                <div
-                  key={t.tick}
-                  className="p-1.5 px-2.5 rounded-lg bg-slate-950/60 border border-slate-800/60 flex items-center justify-between hover:bg-slate-950 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-slate-500 text-[10px]">#{t.tick}</span>
-                    <span className="text-slate-200 font-bold tabular-nums">{t.mid.toFixed(2)}</span>
-                    <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
-                        t.action === 'QUOTE_BOTH_SIDES'
-                          ? 'text-emerald-400 bg-emerald-500/10'
-                          : t.action === 'PULL_QUOTES'
-                          ? 'text-purple-400 bg-purple-500/10'
-                          : t.action === 'WIDEN'
-                          ? 'text-amber-400 bg-amber-500/10'
-                          : 'text-slate-400 bg-slate-800'
-                      }`}
-                    >
-                      {t.action}
-                    </span>
-                    {t.directionLeg && (
-                      <span className="text-amber-400 text-[10px]">[{t.directionLeg.toUpperCase()} LEG]</span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-3 text-[10px]">
-                    <span className="text-slate-400">{t.fill || '-'}</span>
-                    <span className="text-slate-500 tabular-nums">{t.latencyMs.toFixed(0)}ms</span>
-                    <span className="text-slate-600">{t.timeStr}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {onOpenAndroidApk && (
+            <button
+              type="button"
+              onClick={onOpenAndroidApk}
+              className="px-2.5 py-1.5 rounded-lg bg-sky-950/50 hover:bg-sky-900/60 border border-sky-800/50 text-sky-300 hover:text-white font-medium text-[11px] flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-sky-400" />
+              <span>App Android</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
