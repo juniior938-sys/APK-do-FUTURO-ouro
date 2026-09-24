@@ -17,8 +17,8 @@ export default defineConfig(() => {
           name: 'Gold Scalper AI - HFT MetaTrader 5',
           short_name: 'GoldHFT',
           description: 'Terminal HFT e Scalping MT5 com Blindagem Anti-Bloqueio, Suporte Multi-Corretoras e Paridades.',
-          theme_color: '#020617',
-          background_color: '#020617',
+          theme_color: '#000000',
+          background_color: '#000000',
           display: 'standalone',
           orientation: 'portrait',
           start_url: '/',
@@ -51,7 +51,7 @@ export default defineConfig(() => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(import.meta.dirname || __dirname, '.'),
+        '@': path.resolve(import.meta.dirname ?? '.'),
       },
     },
     build: {

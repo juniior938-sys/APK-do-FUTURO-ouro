@@ -2,6 +2,22 @@
   publish = "dist"
   command = "npm run build"
 
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--prefer-offline --no-audit --no-fund"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
