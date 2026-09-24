@@ -116,16 +116,17 @@ Probabilidade: ${signal.confidence}%`;
       {/* Momento de Entrada & Preço de Entrada (Ciano) */}
       <div className="p-2.5 rounded-lg bg-black/80 border border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div
-            className={`px-2.5 py-1 rounded-md font-mono font-black text-xs flex items-center gap-1.5 ${
-              isBuy
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-            }`}
-          >
-            {isBuy ? <TrendingUp className="w-3.5 h-3.5 text-amber-400" /> : <TrendingDown className="w-3.5 h-3.5 text-rose-400" />}
-            <span>{isBuy ? 'COMPRA' : 'VENDA'}</span>
-          </div>
+          {isBuy ? (
+            <div className="px-3 py-1 rounded-md font-mono font-black text-xs flex items-center gap-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-sm shadow-emerald-500/20 animate-pulse">
+              <span className="text-sm font-black leading-none">▲</span>
+              <span>COMPRA</span>
+            </div>
+          ) : (
+            <div className="px-3 py-1 rounded-md font-mono font-black text-xs flex items-center gap-1.5 bg-rose-500/20 text-rose-400 border border-rose-500/50 shadow-sm shadow-rose-500/20 animate-pulse">
+              <span className="text-sm font-black leading-none">▼</span>
+              <span>VENDA</span>
+            </div>
+          )}
 
           <div>
             <span className="text-[10px] text-slate-400 block uppercase font-medium">Preço de Entrada</span>
@@ -278,10 +279,10 @@ Probabilidade: ${signal.confidence}%`;
           <button
             type="button"
             onClick={() => onExecute(signal)}
-            className="py-2 px-3 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center gap-1 transition-colors cursor-pointer"
+            className="py-2 px-3 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black flex items-center justify-center gap-1.5 transition-all shadow-md shadow-emerald-500/20 cursor-pointer"
           >
-            <Zap className="w-3.5 h-3.5" />
-            <span>Executar</span>
+            <Zap className="w-3.5 h-3.5 fill-black" />
+            <span>Entre Agora</span>
           </button>
         )}
       </div>
