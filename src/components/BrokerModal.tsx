@@ -15,6 +15,8 @@ import {
   Shield,
   Wifi,
   Radio,
+  ExternalLink,
+  Info,
 } from 'lucide-react';
 import { BrokerCredentials, ConnectionProtocol, AccountMode, ExnessAccountType } from '../types/mt5';
 import { EXNESS_ACCOUNT_SPECS } from '../utils/goldMath';
@@ -435,25 +437,60 @@ export const BrokerModal: React.FC<BrokerModalProps> = ({
             )}
 
             {formData.protocol === 'metaapi_cloud' && (
-              <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2">
+              <div className="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 space-y-3">
+                <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-blue-950/30 border border-blue-500/30 text-blue-200 text-[11px] leading-relaxed">
+                  <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold text-white">Como obter Token e Account ID na MetaAPI:</span>
+                    <ol className="list-decimal list-inside space-y-1 mt-1 text-slate-300">
+                      <li>Acesse o painel <a href="https://app.metaapi.cloud" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:underline font-mono inline-flex items-center gap-0.5">app.metaapi.cloud <ExternalLink className="w-2.5 h-2.5 inline" /></a> e crie uma conta gratuita.</li>
+                      <li>Vá em <b>API Access &gt; Tokens</b> e gere seu <b>Token de Acesso</b>.</li>
+                      <li>Vá na aba <b>Accounts</b>, clique em <b>+ Add Account</b>, conecte sua conta MT5 e copie o <b>Account ID</b> gerado.</li>
+                    </ol>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-slate-300 font-medium mb-1">Token MetaAPI:</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-slate-300 font-medium">Token MetaAPI:</label>
+                    <a
+                      href="https://app.metaapi.cloud/token"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-0.5 hover:underline"
+                    >
+                      <span>Pegar Token</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
                   <input
                     type="password"
                     value={formData.metaApiToken || ''}
                     onChange={(e) => setFormData({ ...formData, metaApiToken: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 text-xs font-mono"
-                    placeholder="eyJhbGciOi..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 text-xs font-mono placeholder-slate-600 focus:outline-none focus:border-amber-500"
+                    placeholder="Ex: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                   />
                 </div>
+
                 <div>
-                  <label className="block text-slate-300 font-medium mb-1">Account ID MetaAPI:</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-slate-300 font-medium">Account ID MetaAPI:</label>
+                    <a
+                      href="https://app.metaapi.cloud"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-0.5 hover:underline"
+                    >
+                      <span>Painel de Contas</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
                   <input
                     type="text"
                     value={formData.metaApiAccountId || ''}
                     onChange={(e) => setFormData({ ...formData, metaApiAccountId: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 text-xs font-mono"
-                    placeholder="acc_..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 text-xs font-mono placeholder-slate-600 focus:outline-none focus:border-amber-500"
+                    placeholder="Ex: 8d9a2e1b-3f4c-4e8a-9a1b-c2d3e4f5a6b7"
                   />
                 </div>
               </div>

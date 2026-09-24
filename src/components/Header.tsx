@@ -11,16 +11,23 @@ import {
   BarChart3,
   Smartphone,
   Layers,
+  Radio,
+  Globe,
+  Bell,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { AccountInfo, ConnectionStatus } from '../types/mt5';
 import { EXNESS_ACCOUNT_SPECS } from '../utils/goldMath';
 import { getSymbolSpec } from '../types/symbols';
 
+export type AppTab = 'signals' | 'alerts' | 'macro';
+
 export interface HeaderProps {
   account: AccountInfo;
   status: ConnectionStatus;
-  activeTab: 'hft' | 'terminal' | 'bot' | 'prompt' | 'bridge';
-  onTabChange: (tab: 'hft' | 'terminal' | 'bot' | 'prompt' | 'bridge') => void;
+  activeTab: AppTab;
+  onTabChange: (tab: AppTab) => void;
   onOpenBrokerConfig: () => void;
   onOpenDailyReport?: () => void;
   onOpenPairsModal?: () => void;
@@ -30,6 +37,9 @@ export interface HeaderProps {
   isHftRunning?: boolean;
   activeSymbol: string;
   isStealthShieldActive?: boolean;
+  isAudioEnabled?: boolean;
+  onToggleAudio?: () => void;
+  unreadAlertsCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -45,32 +55,36 @@ export const Header: React.FC<HeaderProps> = ({
   hasOpenPositions,
   isHftRunning,
   activeSymbol,
+  isAudioEnabled = true,
+  onToggleAudio,
+  unreadAlertsCount = 0,
 }) => {
-  const accountSpec = account.accountType ? EXNESS_ACCOUNT_SPECS[account.accountType] : undefined;
   const currentSymbolSpec = getSymbolSpec(activeSymbol);
 
   return (
-    <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40">
+    <header className="border-b border-slate-800 bg-black/90 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-3">
-        {/* Zone 1: Wordmark & Broker / Symbol Info */}
+        {/* Zone 1: Wordmark & Live Forex Hub */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold shrink-0">
-            <span className="text-base tracking-tighter">{currentSymbolSpec.icon || 'Au'}</span>
+            <span className="text-base tracking-tighter">{currentSymbolSpec.icon || '🪙'}</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-sm sm:text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-                MT5 Algo Scalper
+                Forex Signal Sentinel
               </h1>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hidden sm:inline font-bold">
+                Stop & Take Ao Vivo
+              </span>
             </div>
             <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1.5 flex-wrap">
               <span className="text-slate-200 font-medium">{account.broker || 'Corretora MT5'}</span>
               <span>·</span>
-              {/* Pair Switcher pill */}
               <button
                 type="button"
                 onClick={onOpenPairsModal}
-                className="text-amber-400 font-semibold hover:text-amber-300 underline underline-offset-2 flex items-center gap-0.5"
+                className="text-amber-400 font-semibold hover:text-amber-300 underline underline-offset-2 flex items-center gap-0.5 cursor-pointer"
                 title="Trocar paridade / moeda"
               >
                 <span>{activeSymbol}</span>
@@ -81,82 +95,77 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Zone 2: Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80">
+        {/* Zone 2: Primary Navigation Tabs */}
+        <nav className="hidden md:flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
           <button
-            onClick={() => onTabChange('hft')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'hft'
+            onClick={() => onTabChange('signals')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              activeTab === 'signals'
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <span className={`w-2 h-2 rounded-full ${isHftRunning ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'}`} />
-            <span>Robô HFT 24/5</span>
+            <Radio className="w-3.5 h-3.5 text-amber-400" />
+            <span>Painel de Sinais</span>
           </button>
 
           <button
-            onClick={() => onTabChange('terminal')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'terminal'
+            onClick={() => onTabChange('alerts')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer relative ${
+              activeTab === 'alerts'
                 ? 'bg-slate-800 text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
-            <span>Gráfico & Boleta</span>
+            <Bell className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Painel de Alertas</span>
+            {unreadAlertsCount > 0 && (
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse absolute -top-0.5 -right-0.5" />
+            )}
           </button>
 
           <button
-            onClick={() => onTabChange('bot')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'bot'
+            onClick={() => onTabChange('macro')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              activeTab === 'macro'
                 ? 'bg-slate-800 text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Bot className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Estratégias Swing</span>
-          </button>
-
-          <button
-            onClick={() => onTabChange('prompt')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'prompt'
-                ? 'bg-slate-800 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Terminal className="w-3.5 h-3.5 text-slate-400" />
-            <span>Prompt MT5</span>
-          </button>
-
-          <button
-            onClick={() => onTabChange('bridge')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'bridge'
-                ? 'bg-slate-800 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <FileCode className="w-3.5 h-3.5 text-purple-400" />
-            <span>Bridge MT5</span>
+            <Globe className="w-3.5 h-3.5 text-blue-400" />
+            <span>Sentinela Macro</span>
           </button>
         </nav>
 
-        {/* Zone 3: Connection, Stealth Shield, APK & Actions */}
+        {/* Zone 3: Quick Audio toggle, Broker Server & Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Sound Toggle */}
+          {onToggleAudio && (
+            <button
+              type="button"
+              onClick={onToggleAudio}
+              className={`p-2 rounded-lg border text-xs transition-colors cursor-pointer ${
+                isAudioEnabled
+                  ? 'bg-slate-900 border-slate-700 text-emerald-400 hover:text-emerald-300'
+                  : 'bg-slate-950 border-slate-800 text-slate-500 hover:text-slate-400'
+              }`}
+              title={isAudioEnabled ? 'Silenciar bips de alerta' : 'Ativar bips sonoros de alerta'}
+            >
+              {isAudioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+          )}
+
           {/* Paridades Quick Button */}
           {onOpenPairsModal && (
             <button
               type="button"
               onClick={onOpenPairsModal}
-              className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-amber-300 transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
-              title="Trocar Paridades / Cesta de Ativos"
+              className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-amber-300 transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+              title="Trocar Paridades / Moedas"
             >
               <Layers className="w-3.5 h-3.5 text-amber-400" />
               <span className="hidden sm:inline">Pares</span>
-              <span className="text-[10px] bg-slate-900 px-1 py-0.5 rounded text-slate-300 font-mono">
+              <span className="text-[10px] bg-black px-1 py-0.5 rounded text-slate-300 font-mono">
                 {activeSymbol.slice(0, 6)}
               </span>
             </button>
@@ -168,31 +177,18 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={onOpenAndroidApk}
               className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-sky-950/40 hover:bg-sky-900/50 border border-sky-500/40 text-sky-300 transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
-              title="Instalar como Aplicativo Android (APK / WebAPK)"
+              title="Instalar no Celular (Android APK / PWA)"
             >
               <Smartphone className="w-3.5 h-3.5 text-sky-400" />
-              <span className="hidden sm:inline">APK Android</span>
-            </button>
-          )}
-
-          {/* Daily Report Button */}
-          {onOpenDailyReport && (
-            <button
-              type="button"
-              onClick={onOpenDailyReport}
-              className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
-              title="Abrir Relatório Diário HFT & Linha do Tempo 24H"
-            >
-              <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden md:inline">24H</span>
+              <span className="hidden sm:inline">App</span>
             </button>
           )}
 
           {/* Broker Server Config */}
           <button
             onClick={onOpenBrokerConfig}
-            className="px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-200 transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap"
-            title="Configurar credenciais e servidor da corretora MT5"
+            className="px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer"
+            title="Configurar servidor MT5 e MetaAPI Cloud"
           >
             <Sliders className="w-3.5 h-3.5 text-slate-400" />
             <span className="hidden sm:inline">Servidor</span>
@@ -210,7 +206,7 @@ export const Header: React.FC<HeaderProps> = ({
           {hasOpenPositions && (
             <button
               onClick={onEmergencyFlatten}
-              className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-800/80 text-rose-300 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+              className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-800/80 text-rose-300 transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
               title="Fechar imediatamente todas as posições abertas"
             >
               <AlertTriangle className="w-3.5 h-3.5" />
@@ -218,6 +214,34 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
         </div>
+      </div>
+
+      {/* Mobile Sub-Navigation Bar */}
+      <div className="flex md:hidden items-center justify-around px-3 py-2 bg-black border-t border-slate-800 gap-2">
+        <button
+          onClick={() => onTabChange('signals')}
+          className={`flex-1 py-1.5 text-xs font-bold rounded-lg text-center ${
+            activeTab === 'signals' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'text-slate-400'
+          }`}
+        >
+          Sinais
+        </button>
+        <button
+          onClick={() => onTabChange('alerts')}
+          className={`flex-1 py-1.5 text-xs font-bold rounded-lg text-center ${
+            activeTab === 'alerts' ? 'bg-slate-800 text-white' : 'text-slate-400'
+          }`}
+        >
+          Alertas
+        </button>
+        <button
+          onClick={() => onTabChange('macro')}
+          className={`flex-1 py-1.5 text-xs font-bold rounded-lg text-center ${
+            activeTab === 'macro' ? 'bg-slate-800 text-white' : 'text-slate-400'
+          }`}
+        >
+          Macro
+        </button>
       </div>
     </header>
   );
