@@ -16,10 +16,8 @@ export default defineConfig(() => {
     },
     build: {
       target: 'esnext',
-      minify: 'esbuild',
-      cssMinify: 'esbuild',
       sourcemap: false,
-      reportCompressedSize: false, // Drastically speeds up CI/CD builds on Netlify and Vercel
+      reportCompressedSize: false,
       chunkSizeWarningLimit: 1200,
       rollupOptions: {
         output: {
@@ -27,20 +25,17 @@ export default defineConfig(() => {
           entryFileNames: 'assets/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash].[ext]',
           manualChunks(id) {
-            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
               return 'vendor-react';
             }
-            if (id.includes('node_modules/motion')) {
+            if (id.includes('node_modules/motion/')) {
               return 'vendor-motion';
             }
-            if (id.includes('node_modules/lucide-react')) {
+            if (id.includes('node_modules/lucide-react/')) {
               return 'vendor-icons';
             }
-            if (id.includes('node_modules/jspdf') || id.includes('node_modules/html2canvas')) {
+            if (id.includes('node_modules/jspdf/')) {
               return 'vendor-pdf';
-            }
-            if (id.includes('node_modules/@google/genai')) {
-              return 'vendor-genai';
             }
           },
         },
