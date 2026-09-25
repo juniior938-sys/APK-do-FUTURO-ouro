@@ -1,6 +1,6 @@
 export type SignalAction = 'BUY' | 'SELL' | 'STRONG_BUY' | 'STRONG_SELL' | 'WAIT';
 export type SignalStatus = 'ACTIVE' | 'TRIGGERED' | 'TP1_HIT' | 'TP2_HIT' | 'TP3_HIT' | 'SL_HIT' | 'CLOSED_NEWS' | 'EXPIRED';
-export type SignalTimeframe = 'M1' | 'M5' | 'M15' | 'H1' | 'H4';
+export type SignalTimeframe = 'M1' | 'M5' | 'M15' | 'M30' | 'H1' | 'H4';
 
 export interface ForexSignal {
   id: string;

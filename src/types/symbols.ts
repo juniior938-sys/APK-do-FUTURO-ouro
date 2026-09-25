@@ -242,6 +242,22 @@ export const SUPPORTED_SYMBOLS: Record<string, SymbolSpec> = {
     description: 'Conhecido como Dragão ou Guppy. Altíssima volatilidade e grandes expansões.',
     icon: '🐉',
   },
+  EURCHF: {
+    symbol: 'EURCHF',
+    name: 'Euro / Franco Suíço',
+    category: 'forex',
+    basePrice: 1.05100,
+    decimals: 5,
+    pipSize: 0.00010,
+    pointSize: 0.00001,
+    contractSize: 100000,
+    minLot: 0.01,
+    maxLot: 100.0,
+    lotStep: 0.01,
+    typicalSpreadPips: 0.4,
+    description: 'Paridade Euro e Franco Suíço de alta correlação geopolítica.',
+    icon: '🇨🇭',
+  },
 };
 
 export function getSymbolSpec(symbol: string): SymbolSpec {
