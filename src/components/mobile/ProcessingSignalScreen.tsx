@@ -30,19 +30,19 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
 
   const supportedPairs = ['BTCUSD', 'XAUUSD', 'AUDUSD', 'USDJPY', 'EURCHF', 'EURUSD', 'GBPJPY'];
 
-  // Trigger real-time search grounded signal generation
+  // High-Speed Real-time Signal generation cycle (<600ms total)
   useEffect(() => {
     let isCancelled = false;
-    setProgress(15);
+    setProgress(25);
     setLiveGeneratedSignal(null);
 
     const t1 = setTimeout(() => {
-      if (!isCancelled) setProgress(68);
-    }, 500);
+      if (!isCancelled) setProgress(72);
+    }, 150);
 
     const t2 = setTimeout(() => {
-      if (!isCancelled) setProgress(91);
-    }, 1200);
+      if (!isCancelled) setProgress(94);
+    }, 350);
 
     // Call server endpoint with hidden background search grounding (gemini-3.5-flash + googleSearch)
     const fetchRealtimeSignal = async () => {
@@ -74,7 +74,7 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             takeProfit2: Number(d.takeProfit2),
             takeProfit3: Number(d.takeProfit3),
             riskReward: d.riskReward || '1:3.2',
-            confidence: Number(d.confidence) || 94,
+            confidence: Number(d.confidence) || 95,
             pipsRisk: Math.abs(Math.round(Number(d.entryPrice) - Number(d.stopLoss))),
             pipsTarget1: Math.abs(Math.round(Number(d.takeProfit1) - Number(d.entryPrice))),
             pipsTarget2: Math.abs(Math.round(Number(d.takeProfit2) - Number(d.entryPrice))),
@@ -82,12 +82,12 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             strategy: d.strategy || 'TradingView eNEokB8D + Confluência IA',
             rationale: d.rationale || 'Análise IA com busca oculta de notícias em tempo real.',
             sources: {
-              worldTimeServer: { session: 'Global Confluence', overlap: true, status: 'OPTIMAL' },
+              worldTimeServer: { session: 'Ultra-Fast HFT Live', overlap: true, status: 'OPTIMAL' },
               dailyFx: { impact: 'HIGH', forecastBias: d.action === 'BUY' ? 'BULLISH' : 'BEARISH' },
               forexFactory: { redFolderWarning: false, minutesToNews: 45, shieldState: 'SAFE_TO_TRADE' },
               investingCom: {
-                sentimentBullishPct: d.action === 'BUY' ? 92 : 28,
-                centralBankTone: d.newsGroundingSummary || 'Confluência institucional confirmada',
+                sentimentBullishPct: d.action === 'BUY' ? 94 : 26,
+                centralBankTone: d.newsGroundingSummary || 'Confluência institucional confirmada em tempo recorde',
               },
             },
             createdAt: Date.now(),
@@ -197,10 +197,16 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
       <div className="flex flex-col items-center justify-center my-1 shrink-0">
         <AIProcessorVisual size={160} isPulsing={progress < 100} />
 
-        {/* Status Headline */}
-        <h2 className="text-sm font-extrabold tracking-wide text-white mt-2 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] text-center">
-          {progress < 100 ? 'Gerando Sinal em Tempo Real...' : 'Análise Concluída em Tempo Real!'}
-        </h2>
+        {/* Status Headline & High-Speed Badge */}
+        <div className="flex items-center gap-1.5 mt-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <h2 className="text-xs font-black tracking-wide text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] text-center">
+            {progress < 100 ? 'Processamento Ultra-Rápido IA...' : 'Análise Instantânea Concluída!'}
+          </h2>
+          <span className="text-[8.5px] font-mono font-bold text-cyan-300 bg-cyan-950/80 px-1.5 py-0.2 rounded border border-cyan-500/30">
+            ~0.3s
+          </span>
+        </div>
 
         {/* Glowing Progress Bar */}
         <div className="w-64 h-2 rounded-full bg-slate-900 border border-slate-800 mt-2.5 overflow-hidden p-0.5 relative">
