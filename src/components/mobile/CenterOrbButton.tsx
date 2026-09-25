@@ -4,11 +4,15 @@ import { audioAlerts } from '../../utils/audioAlerts';
 interface CenterOrbButtonProps {
   onClick: () => void;
   isGenerating?: boolean;
+  selectedSymbol?: string;
+  selectedTimeframe?: string;
 }
 
 export const CenterOrbButton: React.FC<CenterOrbButtonProps> = ({
   onClick,
   isGenerating = false,
+  selectedSymbol,
+  selectedTimeframe,
 }) => {
   const [isPressed, setIsPressed] = useState(false);
 
@@ -173,6 +177,11 @@ export const CenterOrbButton: React.FC<CenterOrbButtonProps> = ({
           <span className="text-[9px] font-bold tracking-widest text-cyan-300 uppercase drop-shadow-[0_0_6px_rgba(34,211,238,0.6)] mt-0.5">
             EM TEMPO REAL
           </span>
+          {selectedSymbol && (
+            <span className="text-[8px] font-mono font-bold text-amber-300 bg-black/40 px-1.5 py-0.5 rounded-full border border-amber-500/30 mt-1">
+              {selectedSymbol} • {selectedTimeframe || 'M5'}
+            </span>
+          )}
         </div>
       </button>
     </div>

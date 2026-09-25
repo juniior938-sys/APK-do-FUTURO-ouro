@@ -16,6 +16,7 @@ export const MobileApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<MobileTab>('home');
   const [displayMode, setDisplayMode] = useState<AppDisplayMode>('single_mobile');
   const [selectedTimeframe, setSelectedTimeframe] = useState<SignalTimeframe>('M5');
+  const [selectedSymbol, setSelectedSymbol] = useState<string>('BTCUSD');
   const [signals, setSignals] = useState<ForexSignal[]>(() => generateInitialSignals());
   const [isProcessingModal, setIsProcessingModal] = useState<boolean>(false);
   const [selectedSignalForDetail, setSelectedSignalForDetail] = useState<ForexSignal | null>(null);
@@ -73,7 +74,9 @@ export const MobileApp: React.FC = () => {
           onViewCompleteSignal={handleViewCompleteSignal}
           initialSignal={selectedSignalForDetail}
           selectedTimeframe={selectedTimeframe}
+          selectedSymbol={selectedSymbol}
           onSelectTimeframe={setSelectedTimeframe}
+          onSelectSymbol={setSelectedSymbol}
         />
       );
     }
@@ -87,6 +90,8 @@ export const MobileApp: React.FC = () => {
             onOpenProfile={() => setActiveTab('perfil')}
             selectedTimeframe={selectedTimeframe}
             onSelectTimeframe={setSelectedTimeframe}
+            selectedSymbol={selectedSymbol}
+            onSelectSymbol={setSelectedSymbol}
             recentSignals={signals}
           />
         );
@@ -254,6 +259,8 @@ export const MobileApp: React.FC = () => {
                     }}
                     selectedTimeframe={selectedTimeframe}
                     onSelectTimeframe={setSelectedTimeframe}
+                    selectedSymbol={selectedSymbol}
+                    onSelectSymbol={setSelectedSymbol}
                     recentSignals={signals}
                   />
                   <BottomTabBar activeTab="home" onChangeTab={setActiveTab} />
@@ -319,7 +326,9 @@ export const MobileApp: React.FC = () => {
                       handleViewCompleteSignal(sig);
                     }}
                     selectedTimeframe={selectedTimeframe}
+                    selectedSymbol={selectedSymbol}
                     onSelectTimeframe={setSelectedTimeframe}
+                    onSelectSymbol={setSelectedSymbol}
                   />
                 </MobileDeviceChassis>
                 <p className="text-center text-xs font-bold text-amber-400 mt-2 uppercase tracking-wider">
