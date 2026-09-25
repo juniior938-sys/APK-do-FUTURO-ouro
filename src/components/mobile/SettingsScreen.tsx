@@ -16,6 +16,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [currency, setCurrency] = useState('USD');
   const [language, setLanguage] = useState('Português');
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+
+  const showNotification = (msg: string) => {
+    setInfoMessage(msg);
+    setTimeout(() => {
+      setInfoMessage(null);
+    }, 3500);
+  };
 
   const toggleSound = () => {
     const next = !soundAlerts;
@@ -24,8 +32,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   };
 
   const handleFeedback = () => {
-    setFeedbackSuccess(true);
-    setTimeout(() => setFeedbackSuccess(false), 3000);
+    showNotification('Obrigado pelo seu feedback! Registrado no sistema.');
   };
 
   return (
@@ -156,7 +163,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
             {/* Alterar Senha */}
             <div
-              onClick={() => alert('Opção de alteração de senha enviada para seu e-mail cadastrado.')}
+              onClick={() => showNotification('Instruções para redefinição de senha enviadas ao e-mail cadastrado.')}
               className="flex items-center justify-between py-2 cursor-pointer hover:bg-slate-800/40 rounded px-1 -mx-1"
             >
               <span className="text-xs font-semibold text-white">Alterar Senha</span>
@@ -165,7 +172,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
             {/* Sair */}
             <div
-              onClick={() => alert('Sessão encerrada com sucesso.')}
+              onClick={() => showNotification('Sessão encerrada com segurança.')}
               className="flex items-center justify-between py-2 cursor-pointer hover:bg-rose-950/20 rounded px-1 -mx-1"
             >
               <span className="text-xs font-semibold text-rose-400">Sair</span>
@@ -215,7 +222,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           </h2>
           <div className="rounded-2xl bg-slate-900/90 border border-slate-800/90 divide-y divide-slate-800/70 p-3 shadow-md">
             <div
-              onClick={() => alert('Central de Ajuda 24/7 conectada. Documentação dos sinais carregada.')}
+              onClick={() => showNotification('Central de Ajuda 24/7 conectada. Documentação dos sinais carregada.')}
               className="flex items-center justify-between py-2 cursor-pointer hover:bg-slate-800/40 rounded px-1 -mx-1"
             >
               <span className="text-xs font-semibold text-white">Central de Ajuda</span>
@@ -223,7 +230,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             </div>
 
             <div
-              onClick={() => alert('Termos de Serviço: Sinais informativos para traders profissionais.')}
+              onClick={() => showNotification('Termos de Serviço: Sinais informativos para traders profissionais.')}
               className="flex items-center justify-between py-2 cursor-pointer hover:bg-slate-800/40 rounded px-1 -mx-1"
             >
               <span className="text-xs font-semibold text-white">Termos de Serviço</span>
@@ -240,9 +247,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           </div>
         </div>
 
-        {feedbackSuccess && (
-          <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs text-center font-medium">
-            Obrigado pelo seu feedback! Registrado no sistema.
+        {infoMessage && (
+          <div className="p-2.5 rounded-xl bg-cyan-950/80 border border-cyan-500/40 text-cyan-200 text-xs text-center font-medium shadow-lg animate-fade-in">
+            {infoMessage}
           </div>
         )}
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PairBadgeIcon } from './PairBadgeIcon';
 import { ForexSignal, SignalTimeframe } from '../../types/signals';
 import { audioAlerts } from '../../utils/audioAlerts';
@@ -20,6 +20,12 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
   const [selectedSymbol, setSelectedSymbol] = useState<string>(
     initialSymbolFilter ? initialSymbolFilter.replace('.pc', '') : 'TODOS'
   );
+
+  useEffect(() => {
+    if (initialSymbolFilter) {
+      setSelectedSymbol(initialSymbolFilter.replace('.pc', ''));
+    }
+  }, [initialSymbolFilter]);
 
   const timeframes = ['TODOS', 'M1', 'M5', 'M15', 'M30', 'H1', 'H4'];
   const symbols = ['TODOS', 'BTC/USD', 'AUD/USD', 'USD/JPY', 'EUR/CHF', 'XAU/USD', 'EUR/USD', 'GBP/JPY'];
