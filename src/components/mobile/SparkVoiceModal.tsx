@@ -60,12 +60,14 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
   if (!isOpen) return null;
 
   const handleAsk = (query: string) => {
+    voiceAssistant.unlockAudio();
     voiceAssistant.sendQuery(query);
   };
 
   const handleSendText = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
+    voiceAssistant.unlockAudio();
     voiceAssistant.sendQuery(inputText.trim());
     setInputText('');
   };

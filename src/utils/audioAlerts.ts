@@ -434,6 +434,61 @@ class TradingAudioEngine {
     osc.start(now);
     osc.stop(now + 0.15);
   }
+
+  // Chime instantâneo acionado antes da voz para garantir som audível imediato
+  public playVoiceActivationChime() {
+    const ctx = this.initContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+    const now = ctx.currentTime;
+    // Acorde futurista institucional: C5 (523.25), E5 (659.25), G5 (783.99), C6 (1046.50)
+    const freqs = [523.25, 659.25, 783.99, 1046.50];
+    freqs.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+
+      gain.gain.setValueAtTime(0, now + idx * 0.05);
+      gain.gain.linearRampToValueAtTime(0.35 * Math.max(0.6, this.volume), now + idx * 0.05 + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.28);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + idx * 0.05);
+      osc.stop(now + idx * 0.05 + 0.3);
+    });
+  }
+
+  // Alerta auditivo institucional para reforçar sinal de Compra/Venda
+  public playSignalVocalAlert(isBuy: boolean) {
+    const ctx = this.initContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+    const now = ctx.currentTime;
+    const freqs = isBuy ? [523.25, 659.25, 783.99, 1046.50] : [1046.50, 783.99, 659.25, 523.25];
+    freqs.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = isBuy ? 'triangle' : 'sawtooth';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+
+      gain.gain.setValueAtTime(0, now + idx * 0.06);
+      gain.gain.linearRampToValueAtTime(0.3 * Math.max(0.6, this.volume), now + idx * 0.06 + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.22);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + idx * 0.06);
+      osc.stop(now + idx * 0.06 + 0.25);
+    });
+  }
 }
 
 export const audioAlerts = new TradingAudioEngine();

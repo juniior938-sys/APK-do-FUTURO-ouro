@@ -7,6 +7,7 @@ import { SettingsScreen } from './SettingsScreen';
 import { ProcessingSignalScreen } from './ProcessingSignalScreen';
 import { ProfileScreen } from './ProfileScreen';
 import { SparkVoiceModal } from './SparkVoiceModal';
+import { LiveVoiceAudioHUD } from './LiveVoiceAudioHUD';
 import { ForexSignal, SignalTimeframe } from '../../types/signals';
 import { generateInitialSignals, createNewSignal } from '../../services/signalEngine';
 import { audioAlerts } from '../../utils/audioAlerts';
@@ -377,6 +378,9 @@ export const MobileApp: React.FC = () => {
         <span className="hidden sm:inline">Voz Spark-X2.5 (Live)</span>
         <span className="sm:hidden">Voz IA</span>
       </button>
+
+      {/* Live Voice Audio Status HUD */}
+      <LiveVoiceAudioHUD />
 
       {/* Spark-X2.5 Live Voice Modal */}
       <SparkVoiceModal

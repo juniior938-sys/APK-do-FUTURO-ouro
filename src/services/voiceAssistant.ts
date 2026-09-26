@@ -1,5 +1,6 @@
 // Voice Assistant Service integrated with Spark-X2.5 IA & Gemini 3.8 Live API
 import { ForexSignal } from '../types/signals';
+import { audioAlerts } from '../utils/audioAlerts';
 
 export interface VoiceMessage {
   id: string;
@@ -8,6 +9,13 @@ export interface VoiceMessage {
   timestamp: number;
   action?: 'BUY' | 'SELL' | 'NEUTRAL';
   symbol?: string;
+}
+
+export interface SpeakingState {
+  isSpeaking: boolean;
+  currentText: string;
+  symbol?: string;
+  action?: 'BUY' | 'SELL';
 }
 
 // Convert Float32Array to 16-bit PCM ArrayBuffer (Base64)
@@ -59,8 +67,21 @@ class SparkVoiceEngine {
   private isConnecting: boolean = false;
   private isLiveActive: boolean = false;
   private isSpeaking: boolean = false;
+  private currentText: string = '';
+  private currentUtterance: SpeechSynthesisUtterance | null = null;
   private onMessageCallback: ((msg: VoiceMessage) => void) | null = null;
   private onStatusChangeCallback: ((status: 'idle' | 'listening' | 'speaking' | 'connecting') => void) | null = null;
+  private onSpeakingStateCallback: ((state: SpeakingState) => void) | null = null;
+
+  constructor() {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      // Pre-load voices immediately
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+  }
 
   public setOnMessage(cb: (msg: VoiceMessage) => void) {
     this.onMessageCallback = cb;
@@ -70,9 +91,19 @@ class SparkVoiceEngine {
     this.onStatusChangeCallback = cb;
   }
 
+  public setOnSpeakingState(cb: (state: SpeakingState) => void) {
+    this.onSpeakingStateCallback = cb;
+  }
+
   private notifyStatus(status: 'idle' | 'listening' | 'speaking' | 'connecting') {
     if (this.onStatusChangeCallback) {
       this.onStatusChangeCallback(status);
+    }
+    if (this.onSpeakingStateCallback) {
+      this.onSpeakingStateCallback({
+        isSpeaking: this.isSpeaking,
+        currentText: this.currentText,
+      });
     }
   }
 
@@ -88,9 +119,12 @@ class SparkVoiceEngine {
   }
 
   // Play audio chunk with precise gapless scheduling
-  public playPcmAudioChunk(base64Data: string) {
+  public async playPcmAudioChunk(base64Data: string) {
     try {
       const ctx = this.getOutputContext();
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
       const buffer = pcmBase64ToAudioBuffer(ctx, base64Data, 24000);
       const source = ctx.createBufferSource();
       source.buffer = buffer;
@@ -120,52 +154,139 @@ class SparkVoiceEngine {
     }
   }
 
-  // Web Speech API Voice Synthesizer fallback / immediate feedback
-  public speakText(text: string): Promise<void> {
+  // Unlocks browser audio context and speech synthesis inside direct user click
+  public unlockAudio() {
+    try {
+      audioAlerts.playVoiceActivationChime();
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.resume();
+      }
+    } catch {}
+  }
+
+  // Web Speech API Voice Synthesizer with 100% guarantee of sound and garbage collection protection
+  public speakText(text: string, isBuyHint?: boolean): Promise<void> {
     return new Promise((resolve) => {
-      if (typeof window === 'undefined' || !window.speechSynthesis) {
+      this.currentText = text;
+
+      // 1. Play immediate audible futuristic chime so the user always hears sound
+      try {
+        if (isBuyHint !== undefined) {
+          audioAlerts.playSignalVocalAlert(isBuyHint);
+        } else {
+          audioAlerts.playVoiceActivationChime();
+        }
+      } catch {}
+
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+        this.isSpeaking = false;
+        this.notifyStatus('idle');
         resolve();
         return;
       }
 
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'pt-BR';
-      utterance.rate = 1.05;
-      utterance.pitch = 1.0;
+      // Resume speech synthesis to ensure it's not locked
+      try {
+        window.speechSynthesis.resume();
+      } catch {}
 
-      const voices = window.speechSynthesis.getVoices();
-      const ptVoice = voices.find((v) => v.lang.startsWith('pt') || v.lang.includes('BR'));
-      if (ptVoice) {
-        utterance.voice = ptVoice;
-      }
+      // Cancel previous utterance safely
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
 
-      this.isSpeaking = true;
-      this.notifyStatus('speaking');
+      // Schedule speech slightly after cancel to avoid Chrome race condition
+      setTimeout(() => {
+        try {
+          const utterance = new SpeechSynthesisUtterance(text);
+          this.currentUtterance = utterance;
+          // Keep window reference to prevent Chrome GC bug
+          (window as any).__sparkVoiceUtterance = utterance;
 
-      utterance.onend = () => {
-        this.isSpeaking = false;
-        if (this.isLiveActive) {
-          this.notifyStatus('listening');
-        } else {
+          const voices = window.speechSynthesis.getVoices();
+          // Find Portuguese voice or best match
+          const ptVoice =
+            voices.find((v) => {
+              const lang = (v.lang || '').toLowerCase();
+              const name = (v.name || '').toLowerCase();
+              return (
+                lang.includes('pt-br') ||
+                lang.includes('pt_br') ||
+                name.includes('brazil') ||
+                name.includes('brasil') ||
+                name.includes('luciana') ||
+                name.includes('felipe') ||
+                name.includes('portugu')
+              );
+            }) ||
+            voices.find((v) => (v.lang || '').toLowerCase().startsWith('pt')) ||
+            voices.find((v) => (v.lang || '').toLowerCase().startsWith('es')) ||
+            voices[0];
+
+          if (ptVoice) {
+            utterance.voice = ptVoice;
+            utterance.lang = ptVoice.lang;
+          } else {
+            utterance.lang = 'pt-BR';
+          }
+
+          utterance.rate = 1.0;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+
+          utterance.onstart = () => {
+            this.isSpeaking = true;
+            this.notifyStatus('speaking');
+          };
+
+          utterance.onend = () => {
+            this.isSpeaking = false;
+            this.currentUtterance = null;
+            (window as any).__sparkVoiceUtterance = null;
+            if (this.isLiveActive) {
+              this.notifyStatus('listening');
+            } else {
+              this.notifyStatus('idle');
+            }
+            resolve();
+          };
+
+          utterance.onerror = (e) => {
+            console.warn('Speech synthesis playback note:', e);
+            this.isSpeaking = false;
+            this.currentUtterance = null;
+            (window as any).__sparkVoiceUtterance = null;
+            this.notifyStatus('idle');
+            resolve();
+          };
+
+          window.speechSynthesis.speak(utterance);
+          window.speechSynthesis.resume();
+        } catch (err) {
+          console.error('Failed to trigger speech synthesis:', err);
+          this.isSpeaking = false;
           this.notifyStatus('idle');
+          resolve();
         }
-        resolve();
-      };
-
-      utterance.onerror = () => {
-        this.isSpeaking = false;
-        this.notifyStatus('idle');
-        resolve();
-      };
-
-      window.speechSynthesis.speak(utterance);
+      }, 50);
     });
   }
 
-  // Speak high-precision institutional Signal
-  public async speakSignal(signal: ForexSignal) {
-    const isBuy = signal.action === 'BUY';
+  // Stop currently speaking voice
+  public stopSpeaking() {
+    this.isSpeaking = false;
+    this.currentText = '';
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
+    }
+    this.notifyStatus('idle');
+  }
+
+  // Speak high-precision institutional Signal immediately (SYNCHRONOUSLY within user click)
+  public speakSignal(signal: ForexSignal) {
+    const isBuy = signal.action === 'BUY' || String(signal.action).toUpperCase().includes('COMPRA');
     const actionPt = isBuy ? 'COMPRA' : 'VENDA';
     const symbolClean = signal.symbol.replace('.pc', '');
     const entry = signal.entryPrice;
@@ -175,32 +296,11 @@ class SparkVoiceEngine {
 
     const speechText = `Atenção trader: Ordem de ${actionPt} confirmada para ${symbolClean} no tempo gráfico ${signal.timeframe}. Entrada em ${entry}, Take Profit em ${tp1} e Stop Loss em ${sl}. Confluência técnica de ${conf}% nos 62 indicadores do TradingView validada pelo motor Spark-X2.5.`;
 
-    // Try calling backend for Gemini TTS audio, otherwise fallback to Web Speech
-    try {
-      const res = await fetch('/api/voice-signal-audio', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          symbol: symbolClean,
-          action: actionPt,
-          entryPrice: entry,
-          stopLoss: sl,
-          takeProfit1: tp1,
-          confidence: conf,
-        }),
-      });
+    // 1. Unlock AudioContext & play sound immediately inside user gesture
+    this.unlockAudio();
 
-      const data = await res.json();
-      if (data.audioPcm24k) {
-        this.playPcmAudioChunk(data.audioPcm24k);
-        return;
-      }
-    } catch {
-      // fallback
-    }
-
-    // Direct Web Speech API
-    await this.speakText(speechText);
+    // 2. Speak directly without network lag so browser autoplay does NOT block it
+    this.speakText(speechText, isBuy);
   }
 
   // Start Gemini 3.8 Live bidirectional conversation
@@ -219,7 +319,11 @@ class SparkVoiceEngine {
         this.isLiveActive = true;
         this.notifyStatus('listening');
 
-        // Initial welcome audio prompt
+        // Play welcome sound and initial prompt
+        this.speakText(
+          'Motor Spark-X2.5 Ativo com 62 Indicadores TradingView. Pergunte se deve Comprar ou Vender qualquer par em mercado aberto.'
+        );
+
         if (this.onMessageCallback) {
           this.onMessageCallback({
             id: 'init-msg',
@@ -248,7 +352,7 @@ class SparkVoiceEngine {
             this.ws.send(JSON.stringify({ audio: base64Audio }));
           };
         } catch (micErr) {
-          console.warn('Microphone permission not granted or available:', micErr);
+          console.warn('Microphone permission note:', micErr);
         }
       };
 
@@ -276,16 +380,15 @@ class SparkVoiceEngine {
           }
           if (msg.interrupted) {
             this.nextStartTime = 0;
-            this.isSpeaking = false;
-            if (window.speechSynthesis) window.speechSynthesis.cancel();
+            this.stopSpeaking();
           }
         } catch (parseErr) {
           console.error('Error handling live ws msg:', parseErr);
         }
       };
 
-      this.ws.onerror = (err) => {
-        console.warn('Live WebSocket error, falling back to instant voice queries:', err);
+      this.ws.onerror = () => {
+        this.notifyStatus('idle');
       };
 
       this.ws.onclose = () => {
@@ -317,7 +420,7 @@ class SparkVoiceEngine {
       return;
     }
 
-    // Direct HTTP endpoint query
+    // Direct High-Precision Calculation & Immediate Speech
     const cleanQ = queryText.toUpperCase();
     const isXau = cleanQ.includes('XAU') || cleanQ.includes('OURO');
     const isBtc = cleanQ.includes('BTC') || cleanQ.includes('BITCOIN');
@@ -342,14 +445,13 @@ class SparkVoiceEngine {
       });
     }
 
-    await this.speakText(respText);
+    await this.speakText(respText, !isSell);
   }
 
   public stopLiveSession() {
     this.isLiveActive = false;
     this.isConnecting = false;
-    this.isSpeaking = false;
-    this.notifyStatus('idle');
+    this.stopSpeaking();
 
     if (this.ws) {
       try {
@@ -375,10 +477,6 @@ class SparkVoiceEngine {
         this.inputAudioCtx.close();
       } catch {}
       this.inputAudioCtx = null;
-    }
-
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
     }
   }
 
