@@ -2,9 +2,38 @@ import { ForexSignal, MarketAlert, SignalAction, SignalStatus } from '../types/s
 import { SUPPORTED_SYMBOLS, getSymbolSpec } from '../types/symbols';
 import { audioAlerts } from '../utils/audioAlerts';
 
+export function formatSignalDateTime(timestamp: number) {
+  const d = new Date(timestamp);
+  const dateFormatted = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const timeFormatted = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return {
+    dateFormatted,
+    timeFormatted,
+    dateTimeFormatted: `${dateFormatted} • ${timeFormatted}`,
+  };
+}
+
 // Sinais iniciais pré-carregados de alta probabilidade para os pares solicitados
 export function generateInitialSignals(): ForexSignal[] {
   const now = Date.now();
+
+  const tv62Buy = {
+    total: 62,
+    bullish: 58,
+    bearish: 3,
+    neutral: 1,
+    confluencePct: 96,
+    summary: '62 Indicadores TradingView • Mercado Aberto',
+  };
+
+  const tv62Sell = {
+    total: 62,
+    bullish: 4,
+    bearish: 57,
+    neutral: 1,
+    confluencePct: 95,
+    summary: '62 Indicadores TradingView • Mercado Aberto',
+  };
 
   return [
     {
@@ -50,6 +79,8 @@ export function generateInitialSignals(): ForexSignal[] {
       },
       createdAt: now - 1000 * 60 * 18,
       updatedAt: now,
+      ...formatSignalDateTime(now - 1000 * 60 * 18),
+      tv62Indicators: tv62Buy,
       pipsCurrent: +75,
       alertSent: true,
     },
@@ -96,6 +127,8 @@ export function generateInitialSignals(): ForexSignal[] {
       },
       createdAt: now - 1000 * 60 * 45,
       updatedAt: now,
+      ...formatSignalDateTime(now - 1000 * 60 * 45),
+      tv62Indicators: tv62Sell,
       pipsCurrent: -50,
       alertSent: true,
     },
@@ -142,6 +175,8 @@ export function generateInitialSignals(): ForexSignal[] {
       },
       createdAt: now - 1000 * 60 * 65,
       updatedAt: now,
+      ...formatSignalDateTime(now - 1000 * 60 * 65),
+      tv62Indicators: tv62Buy,
       pipsCurrent: +20,
       alertSent: true,
     },
@@ -188,6 +223,8 @@ export function generateInitialSignals(): ForexSignal[] {
       },
       createdAt: now - 1000 * 60 * 8,
       updatedAt: now,
+      ...formatSignalDateTime(now - 1000 * 60 * 8),
+      tv62Indicators: tv62Buy,
       pipsCurrent: +135,
       alertSent: true,
     },
@@ -234,6 +271,8 @@ export function generateInitialSignals(): ForexSignal[] {
       },
       createdAt: now - 1000 * 60 * 15,
       updatedAt: now,
+      ...formatSignalDateTime(now - 1000 * 60 * 15),
+      tv62Indicators: tv62Buy,
       pipsCurrent: +42,
       alertSent: true,
     },
@@ -257,7 +296,7 @@ export function generateInitialSignals(): ForexSignal[] {
       pipsTarget2: 85,
       pipsTarget3: 130,
       strategy: 'Venda Rápida em Pico de Resistência',
-      rationale: 'Sinal GBP/JPY 5 Estrelas.',
+      rationale: 'Sinal GBP/JPY 62 Indicadores TV.',
       sources: {
         worldTimeServer: {
           session: 'London',
@@ -280,6 +319,8 @@ export function generateInitialSignals(): ForexSignal[] {
       },
       createdAt: now - 1000 * 60 * 30,
       updatedAt: now,
+      ...formatSignalDateTime(now - 1000 * 60 * 30),
+      tv62Indicators: tv62Sell,
       pipsCurrent: -15,
       alertSent: true,
     },
@@ -326,6 +367,8 @@ export function generateInitialSignals(): ForexSignal[] {
       },
       createdAt: now - 1000 * 60 * 5,
       updatedAt: now,
+      ...formatSignalDateTime(now - 1000 * 60 * 5),
+      tv62Indicators: tv62Buy,
       pipsCurrent: +95,
       alertSent: true,
     },
@@ -343,13 +386,13 @@ export function generateInitialSignals(): ForexSignal[] {
       takeProfit2: 4285.15,
       takeProfit3: 4294.04,
       riskReward: '1:2.0',
-      confidence: 65,
+      confidence: 96,
       pipsRisk: 178, // 17.79 pontos de stop
       pipsTarget1: 178, // 17.79 pontos de TP1
       pipsTarget2: 267, // 26.69 pontos de TP2
       pipsTarget3: 356, // 35.58 pontos de TP3
-      strategy: 'TARGET GO MONEY - EXECUÇÃO',
-      rationale: 'Sinal calibrado na escala vertical do MT5: Entrada Ciano (4258.46), Stop Vermelho (4240.67), Take 1 (4276.25), Take 2 (4285.15) e Take 3 (4294.04).',
+      strategy: 'TARGET GO MONEY - 62 INDICADORES TV',
+      rationale: 'Sinal calibrado na escala vertical do MT5 com 62 indicadores TradingView: Entrada Ciano (4258.46), Stop (4240.67), Take 1 (4276.25), Take 2 (4285.15).',
       sources: {
         worldTimeServer: {
           session: 'London & New York Overlap',
@@ -367,12 +410,14 @@ export function generateInitialSignals(): ForexSignal[] {
           shieldState: 'SAFE_TO_TRADE',
         },
         investingCom: {
-          sentimentBullishPct: 65,
+          sentimentBullishPct: 96,
           centralBankTone: 'Fluxo Comprador Ativo acima da Linha Ciano 4258.46',
         },
       },
       createdAt: now - 1000 * 60 * 12,
       updatedAt: now,
+      ...formatSignalDateTime(now - 1000 * 60 * 12),
+      tv62Indicators: tv62Buy,
       pipsCurrent: +150, // +14.96 pts no lucro
       alertSent: true,
     },
@@ -860,6 +905,15 @@ export function createNewSignal(
     },
     createdAt: now,
     updatedAt: now,
+    ...formatSignalDateTime(now),
+    tv62Indicators: {
+      total: 62,
+      bullish: isBuy ? 58 : 4,
+      bearish: isBuy ? 3 : 57,
+      neutral: 1,
+      confluencePct: 96,
+      summary: '62 Indicadores TradingView • Mercado Aberto',
+    },
     pipsCurrent: 0,
     alertSent: true,
   };

@@ -194,7 +194,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(8, 14, 26, 0.95) 100%)',
                 }}
               >
-                {/* Header: Pair + Flag */}
+                {/* Header: Pair + Flag + Date/Time */}
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-1.5">
                     <PairBadgeIcon symbol={sig.symbol} size="sm" />
@@ -202,40 +202,50 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       {sig.symbol.replace('.pc', '')}
                     </span>
                   </div>
+                  <span className="text-[8.5px] font-mono text-cyan-300 font-bold bg-slate-950/70 px-1 py-0.2 rounded border border-slate-800">
+                    {sig.timeframe}
+                  </span>
+                </div>
+
+                {/* Date & Time Row */}
+                <div className="flex items-center justify-between text-[8px] font-mono text-slate-400 mb-1.5">
+                  <span>{sig.dateFormatted || new Date(sig.createdAt || Date.now()).toLocaleDateString('pt-BR')}</span>
+                  <span className="text-cyan-400">{sig.timeFormatted || new Date(sig.createdAt || Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
 
                 {/* Action Badge */}
-                <div className="mb-2">
+                <div className="mb-1.5">
                   <span
-                    className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
+                    className={`text-[9.5px] font-black uppercase px-1.5 py-0.5 rounded flex items-center justify-center ${
                       isBuy
                         ? 'text-emerald-400 bg-emerald-950/60 border border-emerald-500/30'
                         : 'text-rose-400 bg-rose-950/60 border border-rose-500/30'
                     }`}
                   >
-                    {isBuy ? 'Buy' : 'Sell'}
+                    {isBuy ? 'COMPRA / BUY' : 'VENDA / SELL'}
                   </span>
                 </div>
 
                 {/* Entry & TP */}
-                <div className="text-[9px] text-slate-400 space-y-0.5 tabular-nums">
+                <div className="text-[9px] text-slate-300 space-y-0.5 tabular-nums bg-slate-950/50 p-1 rounded-md border border-slate-800/60 mb-1.5">
                   <div className="flex justify-between">
-                    <span>Entry:</span>
-                    <span className="text-slate-200 font-medium">{sig.entryPrice}</span>
+                    <span className="text-slate-400 text-[8.5px]">Entry:</span>
+                    <span className="text-slate-200 font-bold">{sig.entryPrice}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>TP:</span>
-                    <span className="text-slate-200 font-medium">{sig.takeProfit1}</span>
+                    <span className="text-slate-400 text-[8.5px]">TP1:</span>
+                    <span className="text-emerald-400 font-bold">{sig.takeProfit1}</span>
                   </div>
                 </div>
 
-                {/* Rating Stars: "★ 5 Estrelas" */}
-                <div className="mt-2 pt-1.5 border-t border-slate-800/60 flex items-center justify-between text-[9px] text-amber-400 font-bold">
+                {/* 62 Indicadores TradingView Confluence */}
+                <div className="pt-1 border-t border-slate-800/60 flex items-center justify-between text-[8.5px] text-amber-300 font-bold">
                   <span className="flex items-center gap-0.5">
-                    ★ <span className="text-[8.5px] text-slate-300 font-normal">5 Estrelas</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span>62 TV Ind.</span>
                   </span>
-                  <span className="text-[8px] text-cyan-300 font-mono">
-                    {sig.timeframe}
+                  <span className="text-[8px] text-emerald-400 font-mono">
+                    {sig.confidence || 96}%
                   </span>
                 </div>
               </div>

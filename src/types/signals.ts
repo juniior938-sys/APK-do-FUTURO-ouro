@@ -46,6 +46,17 @@ export interface ForexSignal {
   };
   createdAt: number;
   updatedAt: number;
+  dateFormatted?: string;
+  timeFormatted?: string;
+  dateTimeFormatted?: string;
+  tv62Indicators?: {
+    total: number;
+    bullish: number;
+    bearish: number;
+    neutral: number;
+    confluencePct: number;
+    summary: string;
+  };
   pipsCurrent: number;
   exitReason?: string;
   alertSent?: boolean;

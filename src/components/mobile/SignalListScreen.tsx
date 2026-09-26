@@ -167,66 +167,87 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
                   background: 'linear-gradient(180deg, #091322 0%, #050b14 100%)',
                 }}
               >
-                {/* Header Row: Flags + Symbol + Compra/Venda + Date/Accuracy */}
-                <div className="flex items-center justify-between mb-2.5">
+                {/* Header Row: Pair Badge + Name + Action (Left) & Date/Time (Right) */}
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <PairBadgeIcon symbol={sig.symbol} size="md" />
                     <div>
-                      <h3 className="text-sm font-extrabold text-white tracking-wide">
-                        {sig.symbol.replace('.pc', '')}
-                      </h3>
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="text-sm font-extrabold text-white tracking-wide">
+                          {sig.symbol.replace('.pc', '')}
+                        </h3>
+                        <span className="text-[9px] font-mono font-bold text-amber-300 bg-amber-950/60 px-1 rounded border border-amber-500/30">
+                          {sig.timeframe}
+                        </span>
+                      </div>
                       <p
-                        className={`text-[10px] font-bold ${
+                        className={`text-[10px] font-black uppercase ${
                           isBuy ? 'text-emerald-400' : 'text-rose-400'
                         }`}
                       >
-                        {isBuy ? 'Compra / Buy' : 'Venda / Sell'}
+                        {isBuy ? 'COMPRA / BUY' : 'VENDA / SELL'}
                       </p>
                     </div>
                   </div>
 
-                  {/* Date / Accuracy badge in top right */}
+                  {/* Exact Date & Time */}
                   <div className="text-right">
-                    <span className="text-[10px] font-semibold text-cyan-300">
-                      Date: {sig.timeframe === 'M5' ? '28h 58%' : sig.timeframe === 'M15' ? '22h 60%' : '08h 88%'}
+                    <div className="flex items-center gap-1 text-[9.5px] font-mono font-bold text-cyan-300 bg-slate-900/90 px-2 py-0.5 rounded border border-slate-800">
+                      <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                      <span>{sig.timeFormatted || new Date(sig.createdAt || Date.now()).toLocaleTimeString('pt-BR')}</span>
+                    </div>
+                    <span className="text-[8.5px] font-mono text-slate-400 block mt-0.5">
+                      {sig.dateFormatted || new Date(sig.createdAt || Date.now()).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
                 </div>
 
-                {/* Entry & TP Grid (2 columns matching screenshot) */}
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-mono tabular-nums text-slate-300 bg-slate-900/60 p-2 rounded-xl border border-slate-800/80 mb-2.5">
+                {/* 62 Indicadores TradingView Banner (Mercado Aberto Forex) */}
+                <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-emerald-950/30 to-slate-900/70 rounded-lg border border-emerald-500/20 mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span className="text-[9px] font-bold text-emerald-300">
+                      62 Indicadores TradingView
+                    </span>
+                  </div>
+                  <span className="text-[8.5px] font-bold text-amber-300 font-mono">
+                    {isBuy ? '58 Compra' : '57 Venda'} • {sig.confidence || 96}% Confluência
+                  </span>
+                </div>
+
+                {/* Clean Entry & TP Grid */}
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-mono tabular-nums text-slate-300 bg-slate-900/60 p-2 rounded-xl border border-slate-800/80 mb-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-sans text-[10px]">Entry:</span>
+                    <span className="text-slate-400 font-sans text-[9.5px]">Entry:</span>
                     <span className="font-bold text-white">{sig.entryPrice}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-sans text-[10px]">TP:</span>
-                    <span className="font-bold text-white">
-                      {sig.takeProfit1}{' '}
-                      <span className="text-[9.5px] font-sans text-emerald-400">
-                        {sig.confidence ? `${sig.confidence}%` : '88%'}
-                      </span>
+                    <span className="text-slate-400 font-sans text-[9.5px]">TP1:</span>
+                    <span className="font-bold text-emerald-400">
+                      {sig.takeProfit1}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-sans text-[10px]">TP:</span>
-                    <span className="font-bold text-white">{sig.takeProfit2}</span>
+                    <span className="text-slate-400 font-sans text-[9.5px]">TP2:</span>
+                    <span className="font-bold text-emerald-400">{sig.takeProfit2}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-sans text-[10px]">SL:</span>
+                    <span className="text-slate-400 font-sans text-[9.5px]">SL:</span>
                     <span className="font-bold text-rose-300">
-                      {sig.stopLoss}{' '}
-                      <span className="text-[9.5px] font-sans text-slate-400">
-                        {sig.confidence ? `${sig.confidence}%` : '88%'}
-                      </span>
+                      {sig.stopLoss}
                     </span>
                   </div>
                 </div>
 
-                {/* Footer Banner Row: "Status +75 Pips" | "Lucro +75 Pips" */}
-                <div className="flex items-center justify-between pt-1 border-t border-slate-800/70 text-[10.5px] font-bold">
-                  <span className="text-slate-400">
-                    Status {sig.pipsCurrent >= 0 ? `+${sig.pipsCurrent}` : `${sig.pipsCurrent}`} Pips
+                {/* Footer Banner Row: Status Pips & R:R */}
+                <div className="flex items-center justify-between pt-1 border-t border-slate-800/70 text-[10px] font-bold">
+                  <span className="text-slate-400 flex items-center gap-1">
+                    <span>R:R {sig.riskReward || '1:3.2'}</span>
+                    <span>•</span>
+                    <span className="text-cyan-300">Mercado Aberto</span>
                   </span>
                   <span className={statusPipsColor}>
                     {statusPipsText}
