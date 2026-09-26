@@ -2,6 +2,7 @@ import React from 'react';
 import { WaveRibbon } from './WaveRibbon';
 import { CenterOrbButton } from './CenterOrbButton';
 import { PairBadgeIcon } from './PairBadgeIcon';
+import { SparkWinRatePanel } from './SparkWinRatePanel';
 import { SignalTimeframe, ForexSignal } from '../../types/signals';
 import { audioAlerts } from '../../utils/audioAlerts';
 
@@ -166,6 +167,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       </div>
 
+      {/* Spark-X2.5 Win Rate Panel (Taxa de Sucesso dos Pares) */}
+      <SparkWinRatePanel
+        signals={recentSignals}
+        onSelectPair={onSelectSymbol}
+        selectedSymbol={selectedSymbol}
+      />
+
       {/* "Últimos Sinais" Section */}
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-2">
@@ -238,11 +246,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   </div>
                 </div>
 
-                {/* 62 Indicadores TradingView Confluence */}
-                <div className="pt-1 border-t border-slate-800/60 flex items-center justify-between text-[8.5px] text-amber-300 font-bold">
+                {/* Spark-X2.5 + 62 Indicadores TradingView Confluence */}
+                <div className="pt-1 border-t border-slate-800/60 flex items-center justify-between text-[8px] text-amber-300 font-bold">
                   <span className="flex items-center gap-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span>62 TV Ind.</span>
+                    <span>Spark-X2.5 • 62 TV</span>
                   </span>
                   <span className="text-[8px] text-emerald-400 font-mono">
                     {sig.confidence || 96}%

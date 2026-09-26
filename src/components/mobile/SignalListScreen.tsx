@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PairBadgeIcon } from './PairBadgeIcon';
 import { ForexSignal, SignalTimeframe } from '../../types/signals';
 import { audioAlerts } from '../../utils/audioAlerts';
+import { voiceAssistant } from '../../services/voiceAssistant';
 
 interface SignalListScreenProps {
   signals: ForexSignal[];
@@ -205,17 +206,31 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
                   </div>
                 </div>
 
-                {/* 62 Indicadores TradingView Banner (Mercado Aberto Forex) */}
+                {/* Spark-X2.5 IA + 62 Indicadores TradingView Banner (Mercado Aberto Forex) */}
                 <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-emerald-950/30 to-slate-900/70 rounded-lg border border-emerald-500/20 mb-2">
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                     <span className="text-[9px] font-bold text-emerald-300">
-                      62 Indicadores TradingView
+                      Spark-X2.5 IA • 62 Ind. TradingView
                     </span>
                   </div>
-                  <span className="text-[8.5px] font-bold text-amber-300 font-mono">
-                    {isBuy ? '58 Compra' : '57 Venda'} • {sig.confidence || 96}% Confluência
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[8.5px] font-bold text-amber-300 font-mono">
+                      {sig.confidence || 96}% Confluência
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        voiceAssistant.speakSignal(sig);
+                      }}
+                      className="px-1.5 py-0.5 rounded bg-cyan-950/80 hover:bg-cyan-800 border border-cyan-400/40 text-[8.5px] text-cyan-200 flex items-center gap-0.5 transition active:scale-95"
+                      title="Ouvir análise por voz da IA"
+                    >
+                      <span>🔊</span>
+                      <span>Voz</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Clean Entry & TP Grid */}

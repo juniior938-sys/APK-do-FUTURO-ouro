@@ -3,6 +3,7 @@ import { AIProcessorVisual } from './AIProcessorVisual';
 import { PairBadgeIcon } from './PairBadgeIcon';
 import { ForexSignal, SignalTimeframe } from '../../types/signals';
 import { audioAlerts } from '../../utils/audioAlerts';
+import { voiceAssistant } from '../../services/voiceAssistant';
 
 interface ProcessingSignalScreenProps {
   onBack: () => void;
@@ -232,16 +233,20 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
 
         {/* Real-time Checklist Steps (Enhanced with Background News Search & TradingView) */}
         <div className="w-64 mt-3 space-y-1 text-[11px] font-mono">
+          <div className={`flex items-center justify-between transition-colors ${progress >= 30 ? 'text-cyan-300' : 'text-slate-500'}`}>
+            <span>Spark-X2.5 IA (XHToken)...</span>
+            <span className="font-bold">{progress >= 30 ? '30%...' : `${progress}%...`}</span>
+          </div>
           <div className={`flex items-center justify-between transition-colors ${progress >= 68 ? 'text-cyan-300' : 'text-slate-500'}`}>
-            <span>Busca Oculta de Notícias...</span>
+            <span>62 Indicadores TradingView...</span>
             <span className="font-bold">{progress >= 68 ? '68%...' : `${Math.min(progress, 68)}%...`}</span>
           </div>
           <div className={`flex items-center justify-between transition-colors ${progress >= 91 ? 'text-cyan-300' : 'text-slate-500'}`}>
-            <span>TradingView eNEokB8D...</span>
+            <span>Confluência Mercado Aberto...</span>
             <span className="font-bold">{progress >= 91 ? '91%...' : progress >= 68 ? `${progress}%...` : '0%...'}</span>
           </div>
           <div className={`flex items-center justify-between transition-colors ${progress >= 100 ? 'text-emerald-400 font-bold' : 'text-slate-500'}`}>
-            <span>Gerando Alerta...</span>
+            <span>Sinal Limpo Gerado!</span>
             <span className="font-bold">{progress >= 100 ? '100%!' : 'Aguardando...'}</span>
           </div>
         </div>
@@ -321,12 +326,12 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             </div>
           </div>
 
-          {/* 62 Indicadores TradingView Banner (Mercado Aberto) */}
+          {/* Spark-X2.5 IA + 62 Indicadores TradingView Banner (Mercado Aberto) */}
           <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-emerald-950/40 to-slate-900/80 rounded-lg border border-emerald-500/30 mb-2">
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-[9.5px] font-extrabold text-emerald-300 uppercase tracking-tight">
-                62 Indicadores TradingView
+                Spark-X2.5 IA • 62 Ind. TradingView
               </span>
             </div>
             <span className="text-[9px] font-bold text-amber-300 font-mono">
@@ -373,8 +378,18 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
         </div>
       </div>
 
+      {/* Voice Playback Button */}
+      <button
+        type="button"
+        onClick={() => voiceAssistant.speakSignal(activeSignal)}
+        className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-cyan-950 via-slate-900 to-cyan-950 border border-cyan-500/50 hover:border-cyan-400 text-cyan-300 hover:text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+      >
+        <span className="text-base animate-pulse">🎙️</span>
+        <span>OUVIR ANÁLISE EM VOZ (SPARK-X2.5 IA)</span>
+      </button>
+
       {/* Bottom Action Buttons: VOLTAR / VER SINAL COMPLETO */}
-      <div className="grid grid-cols-2 gap-3 pt-2 shrink-0">
+      <div className="grid grid-cols-2 gap-3 pt-1 shrink-0">
         <button
           type="button"
           onClick={onBack}

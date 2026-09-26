@@ -49,6 +49,15 @@ export interface ForexSignal {
   dateFormatted?: string;
   timeFormatted?: string;
   dateTimeFormatted?: string;
+  sparkModel?: string;
+  sparkDecision?: {
+    recommendation: 'COMPRAR' | 'VENDER';
+    timing: string;
+    certainty: string;
+    pattern: string;
+    eventContext: string;
+    executionSummary: string;
+  };
   tv62Indicators?: {
     total: number;
     bullish: number;

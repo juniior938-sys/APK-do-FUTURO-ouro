@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ForexSignal } from '../types/signals';
 import { getSymbolSpec } from '../types/symbols';
+import { voiceAssistant } from '../services/voiceAssistant';
 import {
   TrendingUp,
   TrendingDown,
@@ -99,9 +100,15 @@ Probabilidade: ${signal.confidence}%`;
                 {signal.timeframe}
               </span>
             </div>
-            <span className="text-[11px] text-slate-400 block truncate max-w-[160px]">
-              {signal.strategy || spec.name}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-slate-400 block truncate max-w-[160px]">
+                {signal.strategy || spec.name}
+              </span>
+            </div>
+            {/* Exact Date & Time */}
+            <div className="text-[10px] font-mono text-cyan-400/90 mt-0.5">
+              📅 {signal.dateTimeFormatted || signal.dateFormatted || new Date(signal.createdAt).toLocaleString('pt-BR')}
+            </div>
           </div>
         </div>
 
@@ -110,6 +117,32 @@ Probabilidade: ${signal.confidence}%`;
           <span className={`text-xs font-mono font-bold ${signal.pipsCurrent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
             {signal.pipsCurrent >= 0 ? `+${signal.pipsCurrent}` : signal.pipsCurrent} pts
           </span>
+        </div>
+      </div>
+
+      {/* Spark-X2.5 IA + 62 Indicadores TradingView (Mercado Aberto) */}
+      <div className="flex items-center justify-between px-2.5 py-1.5 rounded bg-slate-900/90 border border-emerald-500/30 text-[10px]">
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="font-extrabold text-emerald-300">
+            Spark-X2.5 IA • 62 Indicadores TV
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-amber-300 font-bold font-mono">
+            {signal.confidence || 96}% Confluência
+          </span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              voiceAssistant.speakSignal(signal);
+            }}
+            className="flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-950/80 hover:bg-cyan-800 border border-cyan-400/50 text-[10px] text-cyan-200 font-bold transition active:scale-95 shadow-sm"
+            title="Ouvir análise por voz da IA"
+          >
+            <span>🔊</span>
+            <span>Voz IA</span>
+          </button>
         </div>
       </div>
 

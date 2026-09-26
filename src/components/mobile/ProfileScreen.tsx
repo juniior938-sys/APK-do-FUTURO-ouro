@@ -1,14 +1,25 @@
 import React from 'react';
+import { ForexSignal } from '../../types/signals';
+import { CapitalGrowthChart } from './CapitalGrowthChart';
+import { voiceAssistant } from '../../services/voiceAssistant';
 
 interface ProfileScreenProps {
   onBack: () => void;
   onOpenSignalList: () => void;
+  signals?: ForexSignal[];
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onBack,
   onOpenSignalList,
+  signals = [],
 }) => {
+  const handleHearReport = () => {
+    voiceAssistant.speakText(
+      'Relatório de Performance do Trader. Acurácia geral em 94.8%, com lucro acumulado superior a 4.820 pips através da confluência de 62 indicadores TradingView e o motor Spark-X2.5. Curva de capital em constante evolução institucional sem rebaixamento significativo.'
+    );
+  };
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden px-4 pb-3 select-none">
       {/* Top Header */}
@@ -27,10 +38,17 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           PERFIL DO TRADER
         </h1>
 
-        <div className="w-8" />
+        <button
+          type="button"
+          onClick={handleHearReport}
+          className="p-1.5 rounded-lg bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 hover:text-white text-xs transition"
+          title="Ouvir relatório de performance"
+        >
+          🔊
+        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-4 scrollbar-none pr-0.5">
+      <div className="flex-1 overflow-y-auto space-y-3.5 scrollbar-none pr-0.5">
         {/* User Badge Banner */}
         <div
           className="rounded-2xl p-4 border border-amber-500/40 shadow-lg relative flex items-center gap-3.5"
@@ -56,14 +74,17 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             </div>
             <p className="text-xs text-slate-400 font-mono mt-0.5">ID: #78921</p>
             <p className="text-[11px] text-cyan-300 font-semibold mt-1">
-              Licença Vitalícia Ativa
+              Licença Vitalícia Ativa • Spark-X2.5
             </p>
           </div>
         </div>
 
+        {/* Recharts Capital Growth & Cumulative Profit Chart */}
+        <CapitalGrowthChart signals={signals} initialBalance={10000} />
+
         {/* Live Performance Matrix */}
         <div className="rounded-2xl bg-slate-900/90 border border-slate-800/90 p-3 shadow-md">
-          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
+          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5">
             Métricas de Sinais IA
           </h3>
 
