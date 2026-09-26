@@ -69,11 +69,23 @@ class SparkVoiceEngine {
   private isSpeaking: boolean = false;
   private currentText: string = '';
   private currentUtterance: SpeechSynthesisUtterance | null = null;
+  private customRate: number = 1.05;
+  private customPitch: number = 1.0;
+  private customVoiceURI: string = '';
   private onMessageCallback: ((msg: VoiceMessage) => void) | null = null;
   private onStatusChangeCallback: ((status: 'idle' | 'listening' | 'speaking' | 'connecting') => void) | null = null;
   private onSpeakingStateCallback: ((state: SpeakingState) => void) | null = null;
 
   constructor() {
+    try {
+      const savedRate = localStorage.getItem('spark_voice_rate');
+      if (savedRate) this.customRate = parseFloat(savedRate);
+      const savedPitch = localStorage.getItem('spark_voice_pitch');
+      if (savedPitch) this.customPitch = parseFloat(savedPitch);
+      const savedUri = localStorage.getItem('spark_voice_uri');
+      if (savedUri) this.customVoiceURI = savedUri;
+    } catch {}
+
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       // Pre-load voices immediately
       window.speechSynthesis.getVoices();
@@ -81,6 +93,25 @@ class SparkVoiceEngine {
         window.speechSynthesis.getVoices();
       };
     }
+  }
+
+  public getSpeechParams() {
+    return {
+      rate: this.customRate,
+      pitch: this.customPitch,
+      voiceURI: this.customVoiceURI,
+    };
+  }
+
+  public setSpeechParams(rate: number, pitch: number, voiceURI?: string) {
+    this.customRate = Math.max(0.5, Math.min(2.0, rate));
+    this.customPitch = Math.max(0.5, Math.min(2.0, pitch));
+    if (voiceURI !== undefined) this.customVoiceURI = voiceURI;
+    try {
+      localStorage.setItem('spark_voice_rate', this.customRate.toString());
+      localStorage.setItem('spark_voice_pitch', this.customPitch.toString());
+      if (voiceURI !== undefined) localStorage.setItem('spark_voice_uri', voiceURI);
+    } catch {}
   }
 
   public setOnMessage(cb: (msg: VoiceMessage) => void) {
@@ -165,7 +196,11 @@ class SparkVoiceEngine {
   }
 
   // Web Speech API Voice Synthesizer with 100% guarantee of sound and garbage collection protection
-  public speakText(text: string, isBuyHint?: boolean): Promise<void> {
+  public speakText(
+    text: string,
+    isBuyHint?: boolean,
+    options?: { rate?: number; pitch?: number; voiceURI?: string }
+  ): Promise<void> {
     return new Promise((resolve) => {
       this.currentText = text;
 
@@ -204,8 +239,12 @@ class SparkVoiceEngine {
           (window as any).__sparkVoiceUtterance = utterance;
 
           const voices = window.speechSynthesis.getVoices();
-          // Find Portuguese voice or best match
+          const targetURI = options?.voiceURI || this.customVoiceURI;
+
+          // Select matching voice or best Portuguese match
+          const specificVoice = targetURI ? voices.find((v) => v.voiceURI === targetURI) : null;
           const ptVoice =
+            specificVoice ||
             voices.find((v) => {
               const lang = (v.lang || '').toLowerCase();
               const name = (v.name || '').toLowerCase();
@@ -230,8 +269,8 @@ class SparkVoiceEngine {
             utterance.lang = 'pt-BR';
           }
 
-          utterance.rate = 1.0;
-          utterance.pitch = 1.0;
+          utterance.rate = options?.rate ?? this.customRate;
+          utterance.pitch = options?.pitch ?? this.customPitch;
           utterance.volume = 1.0;
 
           utterance.onstart = () => {
