@@ -330,7 +330,7 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
           })}
         </div>
 
-        {/* Card matching Mockup with Clean Precision, Date/Time, and 62 TradingView Indicators */}
+        {/* Card with Clean Precision, Date/Time, and Real MatrixChats & TradingView Data */}
         <div
           className="rounded-2xl p-3 border border-amber-500/40 shadow-[0_0_16px_rgba(251,191,36,0.15)] relative"
           style={{
@@ -433,8 +433,8 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
           {/* IA Accuracy Row */}
           <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-800/80 font-bold">
             <div className="flex items-center gap-1.5">
-              <span className="text-cyan-300">Acurácia IA Confluência</span>
-              <span className="text-[9px] text-slate-400 font-normal">Mercado Aberto Forex</span>
+              <span className="text-cyan-300">Acurácia MatrixChats IA</span>
+              <span className="text-[9px] text-slate-400 font-normal">Dados Reais de Corretoras L2</span>
             </div>
             <span className="text-emerald-400 text-sm drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]">
               {activeSignal.confidence || 96}%

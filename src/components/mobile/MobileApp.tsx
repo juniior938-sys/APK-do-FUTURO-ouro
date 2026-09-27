@@ -107,6 +107,7 @@ export const MobileApp: React.FC = () => {
               setIsProcessingModal(true);
             }}
             initialSymbolFilter={symbolFilter}
+            onUpdateSignals={setSignals}
           />
         );
       case 'config':
@@ -285,6 +286,7 @@ export const MobileApp: React.FC = () => {
                       setIsProcessingModal(true);
                     }}
                     initialSymbolFilter={symbolFilter}
+                    onUpdateSignals={setSignals}
                   />
                   <BottomTabBar activeTab="sinal" onChangeTab={setActiveTab} />
                 </MobileDeviceChassis>
