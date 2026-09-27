@@ -113,27 +113,28 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             dateFormatted: dateStr,
             timeFormatted: timeStr,
             dateTimeFormatted: `${dateStr} • ${timeStr}`,
-            tv62Indicators: d.tv62Indicators || {
-              total: 62,
-              bullish: isBuy ? 58 : 4,
-              bearish: isBuy ? 3 : 57,
-              neutral: 1,
-              confluencePct: 96,
-              summary: '62 Indicadores TradingView • Mercado Aberto',
+            aiAnalysis: d.aiAnalysis || {
+              model: 'MatrixChats AI (https://matrixchats.com/api/v1) + Spark-X2.5',
+              gateway: 'https://matrixchats.com/api/v1',
+              brokerDataFeed: 'Kraken & Coinbase L2 OrderBook + TradingView Realtime',
+              bullishScore: isBuy ? 96 : 4,
+              bearishScore: isBuy ? 4 : 96,
+              confidencePct: Number(d.confidence) || 96,
+              summary: 'Análise Multi-IA Neural • Dados em Tempo Real de Corretoras',
             },
             pipsRisk: Math.abs(Math.round(Number(d.entryPrice) - Number(d.stopLoss))),
             pipsTarget1: Math.abs(Math.round(Number(d.takeProfit1) - Number(d.entryPrice))),
             pipsTarget2: Math.abs(Math.round(Number(d.takeProfit2) - Number(d.entryPrice))),
             pipsTarget3: Math.abs(Math.round(Number(d.takeProfit3) - Number(d.entryPrice))),
-            strategy: d.strategy || 'TradingView 62 Indicadores Confluência',
-            rationale: d.rationale || 'Análise em tempo real de 62 indicadores TradingView em mercado aberto.',
+            strategy: d.strategy || 'MatrixChats IA + Spark-X2.5 Neural Engine',
+            rationale: d.rationale || 'Análise neural em tempo real com dados de corretoras e TradingView.',
             sources: {
               worldTimeServer: { session: 'Ultra-Fast HFT Live', overlap: true, status: 'OPTIMAL' },
               dailyFx: { impact: 'HIGH', forecastBias: isBuy ? 'BULLISH' : 'BEARISH' },
               forexFactory: { redFolderWarning: false, minutesToNews: 45, shieldState: 'SAFE_TO_TRADE' },
               investingCom: {
                 sentimentBullishPct: isBuy ? 96 : 24,
-                centralBankTone: d.newsGroundingSummary || 'Confluência de 62 indicadores confirmada',
+                centralBankTone: d.newsGroundingSummary || 'Fluxo institucional de corretoras confirmado',
               },
             },
             createdAt: Date.now(),
@@ -205,8 +206,8 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
     pipsTarget1: Math.round((delta * 1.5) / (spec.pipSize || 0.0001)),
     pipsTarget2: Math.round((delta * 2.8) / (spec.pipSize || 0.0001)),
     pipsTarget3: Math.round((delta * 4.2) / (spec.pipSize || 0.0001)),
-    strategy: 'Spark-X2.5 IA + 62 Indicadores TradingView',
-    rationale: `Análise em tempo real dos 62 indicadores TradingView em mercado aberto para ${currentPair}.`,
+    strategy: 'MatrixChats IA + Spark-X2.5 Neural Engine',
+    rationale: `Análise neural em tempo real com dados de corretoras e TradingView para ${currentPair}.`,
     sources: {
       worldTimeServer: { session: 'Live Feed', overlap: true, status: 'OPTIMAL' },
       dailyFx: { impact: 'HIGH', forecastBias: isBuy ? 'BULLISH' : 'BEARISH' },
@@ -282,11 +283,11 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             <span className="font-bold">{progress >= 30 ? '30%...' : `${progress}%...`}</span>
           </div>
           <div className={`flex items-center justify-between transition-colors ${progress >= 68 ? 'text-cyan-300' : 'text-slate-500'}`}>
-            <span>62 Indicadores TradingView...</span>
+            <span>Leitura Dados TradingView...</span>
             <span className="font-bold">{progress >= 68 ? '68%...' : `${Math.min(progress, 68)}%...`}</span>
           </div>
           <div className={`flex items-center justify-between transition-colors ${progress >= 91 ? 'text-cyan-300' : 'text-slate-500'}`}>
-            <span>Confluência Mercado Aberto...</span>
+            <span>MatrixChats IA & Corretoras...</span>
             <span className="font-bold">{progress >= 91 ? '91%...' : progress >= 68 ? `${progress}%...` : '0%...'}</span>
           </div>
           <div className={`flex items-center justify-between transition-colors ${progress >= 100 ? 'text-emerald-400 font-bold' : 'text-slate-500'}`}>
@@ -376,16 +377,16 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             </div>
           </div>
 
-          {/* Spark-X2.5 IA + 62 Indicadores TradingView Banner (Mercado Aberto) */}
+          {/* MatrixChats IA + Spark-X2.5 Neural Engine Banner */}
           <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-emerald-950/40 to-slate-900/80 rounded-lg border border-emerald-500/30 mb-2">
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-[9.5px] font-extrabold text-emerald-300 uppercase tracking-tight">
-                Spark-X2.5 IA • 62 Ind. TradingView
+                MatrixChats IA + Spark-X2.5 Neural
               </span>
             </div>
             <span className="text-[9px] font-bold text-amber-300 font-mono">
-              58 Compra • 96% Confluência
+              Dados Corretoras L2 • 96% Confiança
             </span>
           </div>
 

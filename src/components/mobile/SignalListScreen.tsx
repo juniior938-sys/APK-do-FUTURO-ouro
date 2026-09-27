@@ -210,17 +210,17 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
                   </div>
                 </div>
 
-                {/* Spark-X2.5 IA + 62 Indicadores TradingView Banner (Mercado Aberto Forex) */}
+                {/* MatrixChats IA + Spark-X2.5 Neural Engine Banner */}
                 <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-emerald-950/30 to-slate-900/70 rounded-lg border border-emerald-500/20 mb-2">
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                     <span className="text-[9px] font-bold text-emerald-300">
-                      Spark-X2.5 IA • 62 Ind. TradingView
+                      MatrixChats IA + Spark-X2.5 Neural
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="text-[8.5px] font-bold text-amber-300 font-mono">
-                      {sig.confidence || 96}% Confluência
+                      {sig.confidence || 96}% Precisão
                     </span>
                     <button
                       type="button"

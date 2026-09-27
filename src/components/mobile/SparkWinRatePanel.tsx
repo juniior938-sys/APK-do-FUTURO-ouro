@@ -115,7 +115,7 @@ export const SparkWinRatePanel: React.FC<SparkWinRatePanelProps> = ({
               </span>
             </div>
             <p className="text-[9.5px] text-slate-400 font-mono">
-              Taxa de Sucesso em 62 Indicadores TradingView
+              Taxa de Sucesso MatrixChats IA & Corretoras
             </p>
           </div>
         </div>

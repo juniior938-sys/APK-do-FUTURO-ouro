@@ -72,12 +72,13 @@ export interface ForexSignal {
     eventContext: string;
     executionSummary: string;
   };
-  tv62Indicators?: {
-    total: number;
-    bullish: number;
-    bearish: number;
-    neutral: number;
-    confluencePct: number;
+  aiAnalysis?: {
+    model: string;
+    gateway: string;
+    brokerDataFeed: string;
+    bullishScore: number;
+    bearishScore: number;
+    confidencePct: number;
     summary: string;
   };
   pipsCurrent: number;

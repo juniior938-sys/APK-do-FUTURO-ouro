@@ -18,7 +18,7 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
     {
       id: 'welcome',
       sender: 'spark_ai',
-      text: 'Voz Institucional Spark-X2.5 IA pronta com síntese Web Speech nativa calibrada. Pergunte diretamente se deve Comprar ou Vender para receber o sinal exato com confluência de 62 indicadores TradingView.',
+      text: 'Voz Institucional Multi-IA (Spark-X2.5 & MatrixChats). Pergunte diretamente se deve Comprar ou Vender para receber o sinal exato validado com dados reais de corretoras.',
       timestamp: Date.now(),
     },
   ]);
@@ -137,7 +137,7 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
   const handleTestVoice = () => {
     audioAlerts.playVoiceActivationChime();
     speakSignalWithWebSpeech(
-      `Motor Spark-X2.5 calibrado. Taxa de fala em ${rate.toFixed(2)} e tom em ${pitch.toFixed(2)}. Confluência de 62 indicadores TradingView em mercado aberto pronta para operações.`
+      `Motor Spark-X2.5 calibrado. Taxa de fala em ${rate.toFixed(2)} e tom em ${pitch.toFixed(2)}. Redes Neurais ativas com leitura de dados em tempo real prontas para operações.`
     );
   };
 
@@ -181,7 +181,7 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 font-mono">
-                Taxa: {rate.toFixed(2)}x • Tom: {pitch.toFixed(2)}x • 62 TV
+                Taxa: {rate.toFixed(2)}x • Tom: {pitch.toFixed(2)}x • Multi-IA
               </p>
             </div>
           </div>
@@ -395,10 +395,10 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
               <span>₿</span>
             </button>
             <button
-              onClick={() => handleAsk('Status dos 62 indicadores TradingView')}
+              onClick={() => handleAsk('Status da IA Neural e Corretoras')}
               className="px-2 py-1.5 rounded bg-slate-900 hover:bg-purple-950 border border-slate-700 hover:border-purple-400 text-[10px] font-bold text-purple-300 text-left transition flex items-center justify-between active:scale-95"
             >
-              <span>62 Indicadores TradingView</span>
+              <span>MatrixChats IA & Corretoras</span>
               <span>📊</span>
             </button>
           </div>

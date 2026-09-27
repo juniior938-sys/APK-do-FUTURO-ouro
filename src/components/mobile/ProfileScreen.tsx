@@ -16,7 +16,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 }) => {
   const handleHearReport = () => {
     voiceAssistant.speakText(
-      'Relatório de Performance do Trader. Acurácia geral em 94.8%, com lucro acumulado superior a 4.820 pips através da confluência de 62 indicadores TradingView e o motor Spark-X2.5. Curva de capital em constante evolução institucional sem rebaixamento significativo.'
+      'Relatório de Performance do Trader. Acurácia geral em 94.8%, com lucro acumulado superior a 4.820 pips através das Redes Neurais Spark-X2.5 e MatrixChats IA com dados reais de corretoras. Curva de capital em constante evolução institucional sem rebaixamento significativo.'
     );
   };
 

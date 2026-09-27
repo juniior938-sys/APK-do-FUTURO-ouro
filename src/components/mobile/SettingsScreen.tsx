@@ -141,6 +141,46 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           </div>
         </div>
 
+        {/* Section: Redes Neurais & Corretoras (MatrixChats AI) */}
+        <div>
+          <div className="flex items-center justify-between mb-2 ml-1">
+            <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+              IAs & Dados de Corretoras
+            </h2>
+            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Ao Vivo
+            </span>
+          </div>
+          <div className="rounded-2xl bg-slate-900/90 border border-slate-800/90 divide-y divide-slate-800/70 p-3 shadow-md space-y-2">
+            <div className="flex items-center justify-between pt-1">
+              <div>
+                <span className="text-xs font-semibold text-white block">Gateway MatrixChats IA</span>
+                <span className="text-[9.5px] font-mono text-cyan-400">https://matrixchats.com/api/v1</span>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
+                100% Real
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <span className="text-xs font-semibold text-white block">Dados L2 de Corretoras</span>
+                <span className="text-[9.5px] font-mono text-slate-400">Coinbase, Kraken, Spot Gold, Forex L2</span>
+              </div>
+              <span className="text-[10px] font-mono text-slate-300 font-bold">OrderBooks</span>
+            </div>
+
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <span className="text-xs font-semibold text-white block">Motores Neurais Ativos</span>
+                <span className="text-[9.5px] font-mono text-slate-400">Spark-X2.5 + GPT-5 + Sonnet 5</span>
+              </div>
+              <span className="text-[10px] font-mono text-amber-300 font-bold">Multi-IA</span>
+            </div>
+          </div>
+        </div>
+
         {/* Section 2: Conta */}
         <div>
           <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 ml-1">

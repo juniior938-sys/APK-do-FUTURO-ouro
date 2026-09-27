@@ -270,11 +270,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   </div>
                 </div>
 
-                {/* Spark-X2.5 + 62 Indicadores TradingView Confluence */}
+                {/* MatrixChats IA + Spark-X2.5 Neural Engine */}
                 <div className="pt-1 border-t border-slate-800/60 flex items-center justify-between text-[8px] text-amber-300 font-bold">
                   <span className="flex items-center gap-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span>Spark-X2.5 • 62 TV</span>
+                    <span>MatrixChats • Spark-X2.5</span>
                   </span>
                   <span className="text-[8px] text-emerald-400 font-mono">
                     {sig.confidence || 96}%

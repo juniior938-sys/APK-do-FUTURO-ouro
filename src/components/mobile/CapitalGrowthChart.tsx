@@ -271,7 +271,7 @@ export const CapitalGrowthChart: React.FC<CapitalGrowthChartProps> = ({
           <span>Curva Auditada Spark-X2.5</span>
         </span>
         <span className="text-cyan-400">
-          62 Indicadores TradingView
+          MatrixChats IA & TradingView
         </span>
       </div>
     </div>

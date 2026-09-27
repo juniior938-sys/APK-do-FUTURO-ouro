@@ -120,17 +120,17 @@ Probabilidade: ${signal.confidence}%`;
         </div>
       </div>
 
-      {/* Spark-X2.5 IA + 62 Indicadores TradingView (Mercado Aberto) */}
+      {/* MatrixChats IA + Spark-X2.5 Neural Engine */}
       <div className="flex items-center justify-between px-2.5 py-1.5 rounded bg-slate-900/90 border border-emerald-500/30 text-[10px]">
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span className="font-extrabold text-emerald-300">
-            Spark-X2.5 IA • 62 Indicadores TV
+            MatrixChats IA + Spark-X2.5 Neural
           </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-amber-300 font-bold font-mono">
-            {signal.confidence || 96}% Confluência
+            {signal.confidence || 96}% Precisão
           </span>
           <button
             onClick={(e) => {
