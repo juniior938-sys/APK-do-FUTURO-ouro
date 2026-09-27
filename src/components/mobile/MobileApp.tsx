@@ -8,10 +8,11 @@ import { ProcessingSignalScreen } from './ProcessingSignalScreen';
 import { ProfileScreen } from './ProfileScreen';
 import { SparkVoiceModal } from './SparkVoiceModal';
 import { LiveVoiceAudioHUD } from './LiveVoiceAudioHUD';
+import { TopLiveTicker } from './TopLiveTicker';
 import { ForexSignal, SignalTimeframe } from '../../types/signals';
 import { generateInitialSignals, createNewSignal } from '../../services/signalEngine';
 import { audioAlerts } from '../../utils/audioAlerts';
-import { liveMarketFeed, RatesMap } from '../../services/liveMarketFeed';
+import { liveMarketFeed } from '../../services/liveMarketFeed';
 
 export type AppDisplayMode = 'single_mobile' | 'quad_screens' | 'fullscreen_mobile';
 
@@ -26,14 +27,15 @@ export const MobileApp: React.FC = () => {
   const [selectedSignalForDetail, setSelectedSignalForDetail] = useState<ForexSignal | null>(null);
   const [symbolFilter, setSymbolFilter] = useState<string | undefined>(undefined);
 
-  // Real-time live market feed for all currency pairs
-  const [marketRates, setMarketRates] = useState<RatesMap>(() => liveMarketFeed.getRates());
-
   useEffect(() => {
-    return liveMarketFeed.subscribe((rates) => {
-      setMarketRates(rates);
-      // Continuously update all active signals in real-time
-      setSignals((prev) => liveMarketFeed.updateSignalsWithLivePrices(prev));
+    let lastSignalUpdate = 0;
+    return liveMarketFeed.subscribe(() => {
+      // Throttle full-list signal re-calculations to every 2500ms so CPU usage stays minimal
+      const now = Date.now();
+      if (now - lastSignalUpdate > 2500) {
+        lastSignalUpdate = now;
+        setSignals((prev) => liveMarketFeed.updateSignalsWithLivePrices(prev));
+      }
     });
   }, []);
 
@@ -42,7 +44,9 @@ export const MobileApp: React.FC = () => {
       audioAlerts.playTestBeep();
     } catch {}
     const liveNow = liveMarketFeed.getPrice(selectedSymbol);
-    const { signal } = createNewSignal(selectedSymbol, 'BUY', liveNow, selectedTimeframe);
+    const isJpy = selectedSymbol.includes('JPY');
+    const action = isJpy ? 'Sell Forte' : 'Buy Forte';
+    const { signal } = createNewSignal(selectedSymbol, action, liveNow, selectedTimeframe);
     setSelectedSignalForDetail(signal);
     setIsProcessingModal(true);
   };
@@ -140,31 +144,8 @@ export const MobileApp: React.FC = () => {
             </span>
           </div>
 
-          {/* Real-time Ticker: BTC/USD */}
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900/90 border border-amber-500/40 text-xs shadow-sm">
-            <span className="font-bold text-amber-400">BTC/USD</span>
-            <span className="font-mono font-bold text-white tabular-nums">
-              {marketRates['BTCUSD']?.formatted || '$84,408.20'}
-            </span>
-            <span className={`w-2 h-2 rounded-full ${marketRates['BTCUSD']?.direction === 'up' ? 'bg-emerald-400' : 'bg-rose-400'} animate-ping`} />
-          </div>
-
-          {/* Real-time Ticker: XAU/USD */}
-          <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900/90 border border-cyan-500/40 text-xs shadow-sm">
-            <span className="font-bold text-cyan-300">XAU/USD</span>
-            <span className="font-mono font-bold text-white tabular-nums">
-              {marketRates['XAUUSD']?.formatted || '$2,658.40'}
-            </span>
-            <span className={`w-2 h-2 rounded-full ${marketRates['XAUUSD']?.direction === 'up' ? 'bg-emerald-400' : 'bg-rose-400'} animate-pulse`} />
-          </div>
-
-          {/* Real-time Ticker: EUR/USD */}
-          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900/90 border border-emerald-500/40 text-xs shadow-sm">
-            <span className="font-bold text-emerald-300">EUR/USD</span>
-            <span className="font-mono font-bold text-white tabular-nums">
-              {marketRates['EURUSD']?.formatted || '1.13990'}
-            </span>
-          </div>
+          {/* Real-time High-Efficiency Top Ticker */}
+          <TopLiveTicker />
 
           {/* Live Voice Assistant Header Button */}
           <button

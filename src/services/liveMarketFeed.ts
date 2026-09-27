@@ -16,8 +16,8 @@ export type RatesMap = Record<string, LivePriceData>;
 
 const INITIAL_RATES: RatesMap = {
   BTCUSD: { symbol: 'BTCUSD', price: 84408.20, formatted: '$84,408.20', change24h: 1.45, direction: 'up', decimals: 2, lastUpdated: Date.now() },
-  XAUUSD: { symbol: 'XAUUSD', price: 2658.40, formatted: '$2,658.40', change24h: 0.52, direction: 'up', decimals: 2, lastUpdated: Date.now() },
-  'XAUUSD.pc': { symbol: 'XAUUSD.pc', price: 4258.46, formatted: '$4,258.46', change24h: 0.38, direction: 'up', decimals: 2, lastUpdated: Date.now() },
+  XAUUSD: { symbol: 'XAUUSD', price: 4286.20, formatted: '$4,286.20', change24h: 0.52, direction: 'up', decimals: 2, lastUpdated: Date.now() },
+  'XAUUSD.pc': { symbol: 'XAUUSD.pc', price: 4286.20, formatted: '$4,286.20', change24h: 0.38, direction: 'up', decimals: 2, lastUpdated: Date.now() },
   EURUSD: { symbol: 'EURUSD', price: 1.13990, formatted: '1.13990', change24h: -0.15, direction: 'down', decimals: 5, lastUpdated: Date.now() },
   USDJPY: { symbol: 'USDJPY', price: 157.540, formatted: '157.540', change24h: 0.32, direction: 'up', decimals: 3, lastUpdated: Date.now() },
   AUDUSD: { symbol: 'AUDUSD', price: 0.70254, formatted: '0.70254', change24h: 0.18, direction: 'up', decimals: 5, lastUpdated: Date.now() },
@@ -31,6 +31,9 @@ class LiveMarketFeedEngine {
   private isRunning: boolean = false;
   private pollIntervalId: any = null;
   private tickIntervalId: any = null;
+  private ws: WebSocket | null = null;
+  private wsReconnectTimer: any = null;
+  private rafScheduled: boolean = false;
 
   constructor() {
     this.start();
@@ -43,12 +46,15 @@ class LiveMarketFeedEngine {
     // 1. Initial fetch from server API
     this.fetchServerRates();
 
-    // 2. Poll server every 3 seconds for macro real quotes
+    // 2. Connect to WebSocket for high-efficiency, low-CPU live ticks
+    this.connectWebSocket();
+
+    // 3. Fallback poll server every 2.5 seconds
     this.pollIntervalId = setInterval(() => {
       this.fetchServerRates();
-    }, 3000);
+    }, 2500);
 
-    // 3. Fast high-frequency micro-tick every 800ms to guarantee live streaming prices
+    // 4. Micro-tick engine every 800ms for continuous live fluid movement
     this.tickIntervalId = setInterval(() => {
       this.applyMicroTicks();
     }, 800);
@@ -58,6 +64,50 @@ class LiveMarketFeedEngine {
     this.isRunning = false;
     if (this.pollIntervalId) clearInterval(this.pollIntervalId);
     if (this.tickIntervalId) clearInterval(this.tickIntervalId);
+    if (this.wsReconnectTimer) clearTimeout(this.wsReconnectTimer);
+    if (this.ws) {
+      try {
+        this.ws.close();
+      } catch {}
+      this.ws = null;
+    }
+  }
+
+  private connectWebSocket() {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws/live-quotes`;
+      this.ws = new WebSocket(wsUrl);
+
+      this.ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data && data.type === 'rates_update' && data.rates) {
+            this.mergeRates(data.rates);
+          }
+        } catch {}
+      };
+
+      this.ws.onclose = () => {
+        this.ws = null;
+        if (this.isRunning) {
+          this.wsReconnectTimer = setTimeout(() => this.connectWebSocket(), 4000);
+        }
+      };
+
+      this.ws.onerror = () => {
+        if (this.ws) {
+          try {
+            this.ws.close();
+          } catch {}
+          this.ws = null;
+        }
+      };
+    } catch {
+      // Fallback polling is already running
+    }
   }
 
   public subscribe(cb: (rates: RatesMap) => void): () => void {
@@ -82,14 +132,47 @@ class LiveMarketFeedEngine {
   }
 
   private notify() {
-    const copy = { ...this.currentRates };
-    this.listeners.forEach((cb) => {
-      try {
-        cb(copy);
-      } catch (e) {
-        console.error('Error in rate listener:', e);
-      }
+    if (this.rafScheduled) return;
+    this.rafScheduled = true;
+
+    requestAnimationFrame(() => {
+      this.rafScheduled = false;
+      const copy = { ...this.currentRates };
+      this.listeners.forEach((cb) => {
+        try {
+          cb(copy);
+        } catch (e) {
+          console.error('Error in rate listener:', e);
+        }
+      });
     });
+  }
+
+  private mergeRates(ratesObj: Record<string, any>) {
+    const updated: RatesMap = { ...this.currentRates };
+    let hasChanges = false;
+
+    Object.keys(ratesObj).forEach((sym) => {
+      const item = ratesObj[sym];
+      const oldPrice = updated[sym]?.price || item.price;
+      const direction = item.price > oldPrice ? 'up' : item.price < oldPrice ? 'down' : 'same';
+      
+      updated[sym] = {
+        symbol: sym,
+        price: item.price,
+        formatted: item.formatted || this.formatPrice(item.price, item.decimals || 2, sym),
+        change24h: item.change24h || updated[sym]?.change24h || 0,
+        direction,
+        decimals: item.decimals || 2,
+        lastUpdated: Date.now(),
+      };
+      hasChanges = true;
+    });
+
+    if (hasChanges) {
+      this.currentRates = updated;
+      this.notify();
+    }
   }
 
   private async fetchServerRates() {
@@ -98,23 +181,7 @@ class LiveMarketFeedEngine {
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.rates) {
-          const updated: RatesMap = { ...this.currentRates };
-          Object.keys(json.rates).forEach((sym) => {
-            const item = json.rates[sym];
-            const oldPrice = updated[sym]?.price || item.price;
-            const direction = item.price > oldPrice ? 'up' : item.price < oldPrice ? 'down' : 'same';
-            updated[sym] = {
-              symbol: sym,
-              price: item.price,
-              formatted: item.formatted || this.formatPrice(item.price, item.decimals || 2, sym),
-              change24h: item.change24h || updated[sym]?.change24h || 0,
-              direction,
-              decimals: item.decimals || 2,
-              lastUpdated: Date.now(),
-            };
-          });
-          this.currentRates = updated;
-          this.notify();
+          this.mergeRates(json.rates);
         }
       }
     } catch {
@@ -135,7 +202,7 @@ class LiveMarketFeedEngine {
       if (sym.includes('BTC')) {
         delta = (Math.random() - 0.48) * 8.5; // ~$8 variation
       } else if (sym.includes('XAU')) {
-        delta = (Math.random() - 0.48) * 0.35; // ~$0.30 variation
+        delta = (Math.random() - 0.48) * 0.45; // ~$0.40 variation
       } else if (sym.includes('JPY')) {
         delta = (Math.random() - 0.48) * 0.025; // ~0.02 JPY variation
       } else {

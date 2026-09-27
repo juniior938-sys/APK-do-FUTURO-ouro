@@ -418,7 +418,7 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
                 {m.action && (
                   <span
                     className={`px-1.5 py-0.2 rounded text-[9px] font-black tracking-wider ${
-                      m.action === 'BUY' || m.action === 'Buy Forte' ? 'bg-emerald-500 text-black' : 'bg-rose-500 text-white'
+                      String(m.action).toUpperCase().includes('BUY') ? 'bg-emerald-500 text-black' : 'bg-rose-500 text-white'
                     }`}
                   >
                     {formatDisplayAction(m.action)}

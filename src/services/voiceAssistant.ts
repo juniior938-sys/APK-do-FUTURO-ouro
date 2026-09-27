@@ -7,7 +7,7 @@ export interface VoiceMessage {
   sender: 'user' | 'spark_ai';
   text: string;
   timestamp: number;
-  action?: 'BUY' | 'SELL' | 'NEUTRAL';
+  action?: 'BUY' | 'SELL' | 'NEUTRAL' | 'Buy Forte' | 'Sell Forte';
   symbol?: string;
 }
 

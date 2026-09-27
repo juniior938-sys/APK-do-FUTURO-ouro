@@ -39,7 +39,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const currencyPairs = [
     { symbol: 'BTCUSD', label: 'BTC/USD', category: 'Crypto', livePrice: '$84,408.20' },
-    { symbol: 'XAUUSD', label: 'XAU/USD', category: 'Metals', livePrice: '$2,658.40' },
+    { symbol: 'XAUUSD', label: 'XAU/USD', category: 'Metals', livePrice: '$4,286.20' },
     { symbol: 'AUDUSD', label: 'AUD/USD', category: 'Forex', livePrice: '0.70254' },
     { symbol: 'USDJPY', label: 'USD/JPY', category: 'Forex', livePrice: '157.540' },
     { symbol: 'EURCHF', label: 'EUR/CHF', category: 'Forex', livePrice: '0.94432' },
