@@ -1,4 +1,4 @@
-import { ForexSignal, MarketAlert, SignalAction, SignalStatus } from '../types/signals';
+import { ForexSignal, MarketAlert, SignalAction, SignalStatus, formatDisplayAction } from '../types/signals';
 import { SUPPORTED_SYMBOLS, getSymbolSpec } from '../types/symbols';
 import { audioAlerts } from '../utils/audioAlerts';
 
@@ -861,12 +861,14 @@ export function createNewSignal(
 
   const now = Date.now();
   const id = `sig-${symbol.toLowerCase()}-${now}`;
+  const confidence = Math.floor(92 + Math.random() * 6);
+  const strictAction = formatDisplayAction(action, confidence);
 
   const signal: ForexSignal = {
     id,
     symbol,
     name: spec.name,
-    action,
+    action: strictAction,
     status: 'ACTIVE',
     timeframe,
     entryPrice: entry,
@@ -876,7 +878,7 @@ export function createNewSignal(
     takeProfit2: tp2,
     takeProfit3: tp3,
     riskReward: '1:2.8',
-    confidence: Math.floor(88 + Math.random() * 9),
+    confidence,
     pipsRisk: stopPips,
     pipsTarget1: tp1Pips,
     pipsTarget2: tp2Pips,

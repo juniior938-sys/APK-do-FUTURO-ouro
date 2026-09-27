@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PairBadgeIcon } from './PairBadgeIcon';
-import { ForexSignal, SignalTimeframe } from '../../types/signals';
+import { ForexSignal, SignalTimeframe, formatDisplayAction } from '../../types/signals';
 import { audioAlerts } from '../../utils/audioAlerts';
 import { voiceAssistant } from '../../services/voiceAssistant';
 
@@ -181,13 +181,17 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
                           {sig.timeframe}
                         </span>
                       </div>
-                      <p
-                        className={`text-[10px] font-black uppercase ${
-                          isBuy ? 'text-emerald-400' : 'text-rose-400'
-                        }`}
-                      >
-                        {isBuy ? 'COMPRA / BUY' : 'VENDA / SELL'}
-                      </p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span
+                          className={`text-[10.5px] font-black uppercase px-2 py-0.5 rounded tracking-wider ${
+                            isBuy
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                              : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                          }`}
+                        >
+                          {formatDisplayAction(sig.action, sig.confidence)}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -233,21 +237,23 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
                   </div>
                 </div>
 
-                {/* Clean Entry & TP Grid */}
+                {/* Clean Entry, Live Price & TP Grid */}
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-mono tabular-nums text-slate-300 bg-slate-900/60 p-2 rounded-xl border border-slate-800/80 mb-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-sans text-[9.5px]">Entry:</span>
+                    <span className="text-slate-400 font-sans text-[9.5px]">Entrada:</span>
                     <span className="font-bold text-white">{sig.entryPrice}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-cyan-400 font-sans text-[9.5px]">Ao Vivo:</span>
+                    <span className={`font-bold ${sig.pipsCurrent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {sig.currentPrice || sig.entryPrice}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400 font-sans text-[9.5px]">TP1:</span>
                     <span className="font-bold text-emerald-400">
                       {sig.takeProfit1}
                     </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-sans text-[9.5px]">TP2:</span>
-                    <span className="font-bold text-emerald-400">{sig.takeProfit2}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400 font-sans text-[9.5px]">SL:</span>

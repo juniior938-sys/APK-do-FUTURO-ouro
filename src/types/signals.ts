@@ -1,4 +1,18 @@
-export type SignalAction = 'BUY' | 'SELL' | 'STRONG_BUY' | 'STRONG_SELL' | 'WAIT';
+export type SignalAction = 'BUY' | 'Buy Forte' | 'SELL' | 'Sell Forte' | 'STRONG_BUY' | 'STRONG_SELL' | 'WAIT';
+export type DisplayAction = 'BUY' | 'Buy Forte' | 'SELL' | 'Sell Forte';
+
+export function formatDisplayAction(action: string, confidence?: number): DisplayAction {
+  const upper = String(action || '').toUpperCase();
+  const isBuy = upper.includes('BUY') || upper.includes('COMPRA');
+  const isStrong = upper.includes('STRONG') || upper.includes('FORTE') || (confidence !== undefined && confidence >= 95);
+
+  if (isBuy) {
+    return isStrong ? 'Buy Forte' : 'BUY';
+  } else {
+    return isStrong ? 'Sell Forte' : 'SELL';
+  }
+}
+
 export type SignalStatus = 'ACTIVE' | 'TRIGGERED' | 'TP1_HIT' | 'TP2_HIT' | 'TP3_HIT' | 'SL_HIT' | 'CLOSED_NEWS' | 'EXPIRED';
 export type SignalTimeframe = 'M1' | 'M5' | 'M15' | 'M30' | 'H1' | 'H4';
 

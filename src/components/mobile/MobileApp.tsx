@@ -11,6 +11,7 @@ import { LiveVoiceAudioHUD } from './LiveVoiceAudioHUD';
 import { ForexSignal, SignalTimeframe } from '../../types/signals';
 import { generateInitialSignals, createNewSignal } from '../../services/signalEngine';
 import { audioAlerts } from '../../utils/audioAlerts';
+import { liveMarketFeed, RatesMap } from '../../services/liveMarketFeed';
 
 export type AppDisplayMode = 'single_mobile' | 'quad_screens' | 'fullscreen_mobile';
 
@@ -25,30 +26,24 @@ export const MobileApp: React.FC = () => {
   const [selectedSignalForDetail, setSelectedSignalForDetail] = useState<ForexSignal | null>(null);
   const [symbolFilter, setSymbolFilter] = useState<string | undefined>(undefined);
 
-  // Live real-time BTC and Gold price simulation
-  const [btcPrice, setBtcPrice] = useState(64850.0);
-  const [xauPrice, setXauPrice] = useState(2345.5);
+  // Real-time live market feed for all currency pairs
+  const [marketRates, setMarketRates] = useState<RatesMap>(() => liveMarketFeed.getRates());
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Gentle micro-tick on BTC and XAU
-      setBtcPrice((prev) => {
-        const delta = (Math.random() - 0.48) * 15;
-        return Number((prev + delta).toFixed(2));
-      });
-      setXauPrice((prev) => {
-        const delta = (Math.random() - 0.48) * 0.4;
-        return Number((prev + delta).toFixed(2));
-      });
-    }, 2800);
-
-    return () => clearInterval(interval);
+    return liveMarketFeed.subscribe((rates) => {
+      setMarketRates(rates);
+      // Continuously update all active signals in real-time
+      setSignals((prev) => liveMarketFeed.updateSignalsWithLivePrices(prev));
+    });
   }, []);
 
   const handleGenerateClick = () => {
     try {
       audioAlerts.playTestBeep();
     } catch {}
+    const liveNow = liveMarketFeed.getPrice(selectedSymbol);
+    const { signal } = createNewSignal(selectedSymbol, 'BUY', liveNow, selectedTimeframe);
+    setSelectedSignalForDetail(signal);
     setIsProcessingModal(true);
   };
 
@@ -146,19 +141,28 @@ export const MobileApp: React.FC = () => {
           </div>
 
           {/* Real-time Ticker: BTC/USD */}
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900/90 border border-amber-500/40 text-xs">
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900/90 border border-amber-500/40 text-xs shadow-sm">
             <span className="font-bold text-amber-400">BTC/USD</span>
             <span className="font-mono font-bold text-white tabular-nums">
-              ${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              {marketRates['BTCUSD']?.formatted || '$84,408.20'}
             </span>
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className={`w-2 h-2 rounded-full ${marketRates['BTCUSD']?.direction === 'up' ? 'bg-emerald-400' : 'bg-rose-400'} animate-ping`} />
           </div>
 
           {/* Real-time Ticker: XAU/USD */}
-          <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900/90 border border-cyan-500/40 text-xs">
+          <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900/90 border border-cyan-500/40 text-xs shadow-sm">
             <span className="font-bold text-cyan-300">XAU/USD</span>
             <span className="font-mono font-bold text-white tabular-nums">
-              ${xauPrice.toFixed(2)}
+              {marketRates['XAUUSD']?.formatted || '$2,658.40'}
+            </span>
+            <span className={`w-2 h-2 rounded-full ${marketRates['XAUUSD']?.direction === 'up' ? 'bg-emerald-400' : 'bg-rose-400'} animate-pulse`} />
+          </div>
+
+          {/* Real-time Ticker: EUR/USD */}
+          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900/90 border border-emerald-500/40 text-xs shadow-sm">
+            <span className="font-bold text-emerald-300">EUR/USD</span>
+            <span className="font-mono font-bold text-white tabular-nums">
+              {marketRates['EURUSD']?.formatted || '1.13990'}
             </span>
           </div>
 

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { WaveRibbon } from './WaveRibbon';
 import { CenterOrbButton } from './CenterOrbButton';
 import { PairBadgeIcon } from './PairBadgeIcon';
 import { SparkWinRatePanel } from './SparkWinRatePanel';
-import { SignalTimeframe, ForexSignal } from '../../types/signals';
+import { SignalTimeframe, ForexSignal, formatDisplayAction } from '../../types/signals';
 import { audioAlerts } from '../../utils/audioAlerts';
+import { liveMarketFeed, RatesMap } from '../../services/liveMarketFeed';
 
 interface HomeScreenProps {
   onGenerateClick: () => void;
@@ -28,15 +29,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onSelectSymbol,
 }) => {
   const timeframes: SignalTimeframe[] = ['M1', 'M5', 'M15', 'M30', 'H1', 'H4'];
+  const [marketRates, setMarketRates] = useState<RatesMap>(() => liveMarketFeed.getRates());
+
+  useEffect(() => {
+    return liveMarketFeed.subscribe((rates) => {
+      setMarketRates(rates);
+    });
+  }, []);
 
   const currencyPairs = [
-    { symbol: 'BTCUSD', label: 'BTC/USD', category: 'Crypto', livePrice: '$65,120' },
-    { symbol: 'XAUUSD', label: 'XAU/USD', category: 'Metals', livePrice: '$2,345.50' },
-    { symbol: 'AUDUSD', label: 'AUD/USD', category: 'Forex', livePrice: '0.71550' },
-    { symbol: 'USDJPY', label: 'USD/JPY', category: 'Forex', livePrice: '114.800' },
-    { symbol: 'EURCHF', label: 'EUR/CHF', category: 'Forex', livePrice: '1.05100' },
-    { symbol: 'EURUSD', label: 'EUR/USD', category: 'Forex', livePrice: '1.10480' },
-    { symbol: 'GBPJPY', label: 'GBP/JPY', category: 'Forex', livePrice: '156.750' },
+    { symbol: 'BTCUSD', label: 'BTC/USD', category: 'Crypto', livePrice: '$84,408.20' },
+    { symbol: 'XAUUSD', label: 'XAU/USD', category: 'Metals', livePrice: '$2,658.40' },
+    { symbol: 'AUDUSD', label: 'AUD/USD', category: 'Forex', livePrice: '0.70254' },
+    { symbol: 'USDJPY', label: 'USD/JPY', category: 'Forex', livePrice: '157.540' },
+    { symbol: 'EURCHF', label: 'EUR/CHF', category: 'Forex', livePrice: '0.94432' },
+    { symbol: 'EURUSD', label: 'EUR/USD', category: 'Forex', livePrice: '1.13990' },
+    { symbol: 'GBPJPY', label: 'GBP/JPY', category: 'Forex', livePrice: '208.565' },
   ];
 
   const handleTfClick = (tf: SignalTimeframe) => {
@@ -138,6 +146,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none snap-x">
           {currencyPairs.map((pair) => {
             const isSelected = selectedSymbol.replace('.pc', '') === pair.symbol;
+            const rate = marketRates[pair.symbol];
+            const displayPrice = rate?.formatted || pair.livePrice;
+            const direction = rate?.direction || 'same';
+
             return (
               <button
                 key={pair.symbol}
@@ -154,8 +166,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <div className={`text-[10.5px] font-extrabold leading-tight ${isSelected ? 'text-amber-300' : 'text-slate-100'}`}>
                     {pair.label}
                   </div>
-                  <div className="text-[8.5px] font-mono text-slate-400 leading-tight">
-                    {pair.livePrice}
+                  <div className={`text-[8.5px] font-mono leading-tight flex items-center gap-0.5 ${
+                    direction === 'up' ? 'text-emerald-400 font-bold' : direction === 'down' ? 'text-rose-400 font-bold' : 'text-slate-400'
+                  }`}>
+                    <span>{displayPrice}</span>
+                    {direction === 'up' && <span className="text-[7.5px] animate-pulse">▲</span>}
+                    {direction === 'down' && <span className="text-[7.5px] animate-pulse">▼</span>}
                   </div>
                 </div>
                 {isSelected && (
@@ -192,7 +208,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* Horizontal Carousel of Signals */}
         <div className="flex items-center gap-2.5 overflow-x-auto pb-1.5 scrollbar-none snap-x">
           {recentSignals.slice(0, 6).map((sig) => {
-            const isBuy = sig.action.includes('BUY');
+            const strictAction = formatDisplayAction(sig.action, sig.confidence);
+            const isBuy = strictAction.includes('BUY') || strictAction.includes('Buy');
+
             return (
               <div
                 key={sig.id}
@@ -221,27 +239,33 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <span className="text-cyan-400">{sig.timeFormatted || new Date(sig.createdAt || Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
 
-                {/* Action Badge */}
+                {/* Action Badge: Strictly BUY / Buy Forte / SELL / Sell Forte */}
                 <div className="mb-1.5">
                   <span
-                    className={`text-[9.5px] font-black uppercase px-1.5 py-0.5 rounded flex items-center justify-center ${
+                    className={`text-[9.5px] font-black uppercase px-1.5 py-0.5 rounded flex items-center justify-center tracking-wider ${
                       isBuy
                         ? 'text-emerald-400 bg-emerald-950/60 border border-emerald-500/30'
                         : 'text-rose-400 bg-rose-950/60 border border-rose-500/30'
                     }`}
                   >
-                    {isBuy ? 'COMPRA / BUY' : 'VENDA / SELL'}
+                    {strictAction}
                   </span>
                 </div>
 
-                {/* Entry & TP */}
-                <div className="text-[9px] text-slate-300 space-y-0.5 tabular-nums bg-slate-950/50 p-1 rounded-md border border-slate-800/60 mb-1.5">
+                {/* Entry & Live Current Price */}
+                <div className="text-[9px] text-slate-300 space-y-0.5 tabular-nums bg-slate-950/50 p-1 rounded-md border border-slate-800/60 mb-1.5 font-mono">
                   <div className="flex justify-between">
-                    <span className="text-slate-400 text-[8.5px]">Entry:</span>
+                    <span className="text-slate-400 text-[8px]">Entrada:</span>
                     <span className="text-slate-200 font-bold">{sig.entryPrice}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400 text-[8.5px]">TP1:</span>
+                    <span className="text-cyan-400 text-[8px]">Ao Vivo:</span>
+                    <span className={`font-bold ${sig.pipsCurrent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {sig.currentPrice || sig.entryPrice}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400 text-[8px]">TP1:</span>
                     <span className="text-emerald-400 font-bold">{sig.takeProfit1}</span>
                   </div>
                 </div>

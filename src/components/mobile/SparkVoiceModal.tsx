@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { voiceAssistant, VoiceMessage } from '../../services/voiceAssistant';
 import { audioAlerts } from '../../utils/audioAlerts';
+import { formatDisplayAction } from '../../types/signals';
 
 interface SparkVoiceModalProps {
   isOpen: boolean;
@@ -416,11 +417,11 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
                 </span>
                 {m.action && (
                   <span
-                    className={`px-1.5 py-0.2 rounded text-[9px] font-black ${
-                      m.action === 'BUY' ? 'bg-emerald-500 text-black' : 'bg-rose-500 text-white'
+                    className={`px-1.5 py-0.2 rounded text-[9px] font-black tracking-wider ${
+                      m.action === 'BUY' || m.action === 'Buy Forte' ? 'bg-emerald-500 text-black' : 'bg-rose-500 text-white'
                     }`}
                   >
-                    {m.action === 'BUY' ? 'COMPRA / BUY' : 'VENDA / SELL'}
+                    {formatDisplayAction(m.action)}
                   </span>
                 )}
               </div>

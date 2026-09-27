@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { AIProcessorVisual } from './AIProcessorVisual';
 import { PairBadgeIcon } from './PairBadgeIcon';
-import { ForexSignal, SignalTimeframe } from '../../types/signals';
+import { ForexSignal, SignalTimeframe, formatDisplayAction } from '../../types/signals';
 import { audioAlerts } from '../../utils/audioAlerts';
 import { voiceAssistant } from '../../services/voiceAssistant';
+import { liveMarketFeed } from '../../services/liveMarketFeed';
+import { getSymbolSpec } from '../../types/symbols';
 
 interface ProcessingSignalScreenProps {
   onBack: () => void;
@@ -28,8 +30,32 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
   const [currentPair, setCurrentPair] = useState<string>(selectedSymbol.replace('.pc', ''));
   const [liveGeneratedSignal, setLiveGeneratedSignal] = useState<ForexSignal | null>(initialSignal || null);
   const [newsSummary, setNewsSummary] = useState<string>('Buscando confluência com notícias globais e layout TradingView...');
+  const [livePriceData, setLivePriceData] = useState(() => liveMarketFeed.getRate(currentPair));
 
   const supportedPairs = ['BTCUSD', 'XAUUSD', 'AUDUSD', 'USDJPY', 'EURCHF', 'EURUSD', 'GBPJPY'];
+
+  // Subscribe to real-time live price ticks
+  useEffect(() => {
+    return liveMarketFeed.subscribe((rates) => {
+      const rate = rates[currentPair] || rates[currentPair.replace('.pc', '')];
+      if (rate) {
+        setLivePriceData(rate);
+        setLiveGeneratedSignal((prev) => {
+          if (!prev) return prev;
+          const isBuy = prev.action.includes('BUY') || prev.action === 'Buy Forte';
+          const diff = isBuy ? rate.price - prev.entryPrice : prev.entryPrice - rate.price;
+          const spec = getSymbolSpec(prev.symbol);
+          const pips = Math.round(diff / (spec.pipSize || 0.0001));
+          return {
+            ...prev,
+            currentPrice: rate.price,
+            pipsCurrent: pips,
+            updatedAt: Date.now(),
+          };
+        });
+      }
+    });
+  }, [currentPair]);
 
   // High-Speed Real-time Signal generation cycle (<600ms total)
   useEffect(() => {
@@ -48,12 +74,14 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
     // Call server endpoint with hidden background search grounding (gemini-3.5-flash + googleSearch)
     const fetchRealtimeSignal = async () => {
       try {
+        const liveNowPrice = liveMarketFeed.getPrice(currentPair);
         const res = await fetch('/api/ai-realtime-signal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             symbol: currentPair,
             timeframe: selectedTimeframe,
+            currentPrice: liveNowPrice,
             chartUrl: 'https://br.tradingview.com/chart/eNEokB8D/',
           }),
         });
@@ -64,15 +92,18 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
           const nowD = new Date();
           const dateStr = d.dateFormatted || nowD.toLocaleDateString('pt-BR');
           const timeStr = d.timeFormatted || nowD.toLocaleTimeString('pt-BR');
+          const strictAction = formatDisplayAction(d.action, Number(d.confidence) || 96);
+          const isBuy = strictAction.includes('BUY') || strictAction.includes('Buy');
+
           const newSig: ForexSignal = {
             id: `sig-grounded-${d.symbol}-${Date.now()}`,
             symbol: d.symbol,
             name: `${d.symbol.slice(0, 3)}/${d.symbol.slice(3)}`,
-            action: d.action || 'BUY',
+            action: strictAction,
             status: 'ACTIVE',
             timeframe: selectedTimeframe,
-            entryPrice: Number(d.entryPrice),
-            currentPrice: Number(d.entryPrice),
+            entryPrice: Number(d.entryPrice) || liveNowPrice,
+            currentPrice: liveNowPrice,
             stopLoss: Number(d.stopLoss),
             takeProfit1: Number(d.takeProfit1),
             takeProfit2: Number(d.takeProfit2),
@@ -84,8 +115,8 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             dateTimeFormatted: `${dateStr} • ${timeStr}`,
             tv62Indicators: d.tv62Indicators || {
               total: 62,
-              bullish: d.action === 'BUY' ? 58 : 4,
-              bearish: d.action === 'BUY' ? 3 : 57,
+              bullish: isBuy ? 58 : 4,
+              bearish: isBuy ? 3 : 57,
               neutral: 1,
               confluencePct: 96,
               summary: '62 Indicadores TradingView • Mercado Aberto',
@@ -98,16 +129,16 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             rationale: d.rationale || 'Análise em tempo real de 62 indicadores TradingView em mercado aberto.',
             sources: {
               worldTimeServer: { session: 'Ultra-Fast HFT Live', overlap: true, status: 'OPTIMAL' },
-              dailyFx: { impact: 'HIGH', forecastBias: d.action === 'BUY' ? 'BULLISH' : 'BEARISH' },
+              dailyFx: { impact: 'HIGH', forecastBias: isBuy ? 'BULLISH' : 'BEARISH' },
               forexFactory: { redFolderWarning: false, minutesToNews: 45, shieldState: 'SAFE_TO_TRADE' },
               investingCom: {
-                sentimentBullishPct: d.action === 'BUY' ? 96 : 24,
+                sentimentBullishPct: isBuy ? 96 : 24,
                 centralBankTone: d.newsGroundingSummary || 'Confluência de 62 indicadores confirmada',
               },
             },
             createdAt: Date.now(),
             updatedAt: Date.now(),
-            pipsCurrent: d.pipsCurrent || 75,
+            pipsCurrent: 0,
             alertSent: true,
           };
 
@@ -305,9 +336,15 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
                     {selectedTimeframe}
                   </span>
                 </div>
-                <p className={`text-[10.5px] font-black uppercase ${activeSignal.action.includes('BUY') ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {activeSignal.action.includes('BUY') ? 'COMPRA / BUY' : 'VENDA / SELL'}
-                </p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className={`px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-wider ${
+                    activeSignal.action.includes('BUY') || activeSignal.action === 'Buy Forte'
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-sm shadow-emerald-500/30'
+                      : 'bg-rose-500/20 text-rose-400 border border-rose-500/50 shadow-sm shadow-rose-500/30'
+                  }`}>
+                    {formatDisplayAction(activeSignal.action, activeSignal.confidence)}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -337,6 +374,20 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             <span className="text-[9px] font-bold text-amber-300 font-mono">
               58 Compra • 96% Confluência
             </span>
+          </div>
+
+          {/* Preço em Tempo Real (Live Price Ticker) */}
+          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-black/70 border border-cyan-500/40 text-[10.5px] font-mono mb-2 shadow-inner">
+            <span className="text-slate-300 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span className="font-bold uppercase tracking-tight">Preço em Tempo Real:</span>
+            </span>
+            <div className="flex items-center gap-2 font-bold">
+              <span className="text-white text-xs font-black">{livePriceData.formatted}</span>
+              <span className={`text-[10px] font-mono font-bold ${activeSignal.pipsCurrent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                ({activeSignal.pipsCurrent >= 0 ? `+${activeSignal.pipsCurrent}` : activeSignal.pipsCurrent} pts)
+              </span>
+            </div>
           </div>
 
           {/* Clean Pricing Grid: Entry, TP1, TP2, TP3, SL */}

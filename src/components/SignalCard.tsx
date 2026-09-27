@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ForexSignal } from '../types/signals';
+import { ForexSignal, formatDisplayAction } from '../types/signals';
 import { getSymbolSpec } from '../types/symbols';
 import { voiceAssistant } from '../services/voiceAssistant';
 import {
@@ -152,12 +152,12 @@ Probabilidade: ${signal.confidence}%`;
           {isBuy ? (
             <div className="px-3 py-1 rounded-md font-mono font-black text-xs flex items-center gap-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-sm shadow-emerald-500/20 animate-pulse">
               <span className="text-sm font-black leading-none">▲</span>
-              <span>COMPRA</span>
+              <span>{formatDisplayAction(signal.action, signal.confidence)}</span>
             </div>
           ) : (
             <div className="px-3 py-1 rounded-md font-mono font-black text-xs flex items-center gap-1.5 bg-rose-500/20 text-rose-400 border border-rose-500/50 shadow-sm shadow-rose-500/20 animate-pulse">
               <span className="text-sm font-black leading-none">▼</span>
-              <span>VENDA</span>
+              <span>{formatDisplayAction(signal.action, signal.confidence)}</span>
             </div>
           )}
 
