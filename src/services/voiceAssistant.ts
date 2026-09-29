@@ -323,6 +323,10 @@ class SparkVoiceEngine {
     this.notifyStatus('idle');
   }
 
+  public stopAllAudio() {
+    this.stopSpeaking();
+  }
+
   // Speak high-precision institutional Signal immediately (SYNCHRONOUSLY within user click)
   public speakSignal(signal: ForexSignal) {
     const isBuy = signal.action === 'BUY' || String(signal.action).toUpperCase().includes('COMPRA');

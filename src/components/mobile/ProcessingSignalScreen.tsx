@@ -351,12 +351,14 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className={`px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-wider ${
+                  <span className={`px-2.5 py-0.5 rounded-lg text-xs font-black uppercase tracking-wider ${
                     activeSignal.action.includes('BUY') || activeSignal.action === 'Buy Forte'
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-sm shadow-emerald-500/30'
-                      : 'bg-rose-500/20 text-rose-400 border border-rose-500/50 shadow-sm shadow-rose-500/30'
+                      ? 'bg-emerald-500 text-slate-950 shadow-[0_0_10px_#10b981]'
+                      : 'bg-rose-500 text-white shadow-[0_0_10px_#f43f5e]'
                   }`}>
-                    {formatDisplayAction(activeSignal.action, activeSignal.confidence)}
+                    {activeSignal.action.includes('BUY') || activeSignal.action === 'Buy Forte'
+                      ? '⚡ COMPRA AGORA (BUY)'
+                      : '⚡ VENDE AGORA (SELL)'}
                   </span>
                 </div>
               </div>

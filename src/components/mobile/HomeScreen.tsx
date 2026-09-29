@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { WaveRibbon } from './WaveRibbon';
 import { CenterOrbButton } from './CenterOrbButton';
 import { PairBadgeIcon } from './PairBadgeIcon';
 import { SparkWinRatePanel } from './SparkWinRatePanel';
 import { XauFeedDiagnosticOverlay } from './XauFeedDiagnosticOverlay';
+import { XauCandlestickChart } from './XauCandlestickChart';
+import { SurgicalAnalysisModal } from './SurgicalAnalysisModal';
+import { SurgicalSignalReport, generateSurgicalAIReport } from '../../services/candlestickPatternEngine';
 import { SignalTimeframe, ForexSignal, formatDisplayAction } from '../../types/signals';
 import { audioAlerts } from '../../utils/audioAlerts';
 import { liveMarketFeed, RatesMap } from '../../services/liveMarketFeed';
@@ -31,12 +34,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 }) => {
   const timeframes: SignalTimeframe[] = ['M1', 'M5', 'M15', 'M30', 'H1', 'H4'];
   const [marketRates, setMarketRates] = useState<RatesMap>(() => liveMarketFeed.getRates());
+  const [selectedSurgicalReport, setSelectedSurgicalReport] = useState<SurgicalSignalReport | null>(null);
+  const [isSurgicalModalOpen, setIsSurgicalModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     return liveMarketFeed.subscribe((rates) => {
       setMarketRates(rates);
     });
   }, []);
+
+  // Análise em tempo real da IA Grok no tempo selecionado
+  const homeGrokReport: SurgicalSignalReport = useMemo(() => {
+    const liveP = liveMarketFeed.getPrice(selectedSymbol) || 4286.20;
+    return generateSurgicalAIReport(selectedSymbol, liveP, selectedTimeframe);
+  }, [selectedSymbol, selectedTimeframe, marketRates]);
 
   const currencyPairs = [
     { symbol: 'BTCUSD', label: 'BTC/USD', category: 'Crypto', livePrice: '$84,408.20' },
@@ -130,6 +141,54 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       </div>
 
+      {/* Grok IA Direct Short Verdict Ribbon */}
+      <div
+        className={`relative z-10 mb-2.5 p-2.5 rounded-xl border flex items-center justify-between transition-all ${
+          homeGrokReport.direction === 'BUY'
+            ? 'bg-gradient-to-r from-emerald-950/90 via-[#062419] to-slate-900 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+            : 'bg-gradient-to-r from-rose-950/90 via-[#260a12] to-slate-900 border-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.3)]'
+        }`}
+      >
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping shrink-0" />
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[8.5px] font-mono uppercase text-cyan-300 font-bold">
+                IA GROK (xAI) • TEMPO [{selectedTimeframe}]
+              </span>
+              <span className="text-[8px] font-mono text-amber-400 font-bold bg-amber-950/80 px-1 rounded border border-amber-500/30">
+                TEMPO REAL
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span
+                className={`text-xs sm:text-sm font-black uppercase tracking-wider px-2 py-0.5 rounded-lg ${
+                  homeGrokReport.direction === 'BUY'
+                    ? 'bg-emerald-500 text-slate-950 shadow-[0_0_8px_#10b981]'
+                    : 'bg-rose-500 text-white shadow-[0_0_8px_#f43f5e]'
+                }`}
+              >
+                {homeGrokReport.shortVerdict}
+              </span>
+              <span className="text-[9.5px] font-mono text-slate-300">
+                {selectedSymbol}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedSurgicalReport(homeGrokReport);
+            setIsSurgicalModalOpen(true);
+          }}
+          className="px-2.5 py-1 text-[9.5px] font-bold uppercase rounded-lg bg-cyan-950 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-900 active:scale-95 transition-all shrink-0"
+        >
+          Ouvir / Detalhes
+        </button>
+      </div>
+
       {/* Paridades de Moedas (Abaixo do "time" na Home) */}
       <div className="relative z-10 mb-3">
         <div className="flex items-center justify-between px-0.5 mb-1.5">
@@ -187,7 +246,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       </div>
 
-      {/* Spark-X2.5 Win Rate Panel (Taxa de Sucesso dos Pares) */}
+      {/* Gráfico de Velas Candlestick em Tempo Real (XAU/USD) & Análise de Padrões da IA */}
+      <XauCandlestickChart
+        symbol={selectedSymbol.includes('XAU') ? selectedSymbol : 'XAUUSD'}
+        selectedTimeframe={selectedTimeframe}
+        onTimeframeSelect={(tf) => onSelectTimeframe(tf as SignalTimeframe)}
+        onOpenSurgicalDetail={(report) => {
+          setSelectedSurgicalReport(report);
+          setIsSurgicalModalOpen(true);
+        }}
+      />
+
+      {/* Painel Win Rate IA (Taxa de Sucesso dos Pares) */}
       <SparkWinRatePanel
         signals={recentSignals}
         onSelectPair={onSelectSymbol}
@@ -289,6 +359,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           })}
         </div>
       </div>
+
+      {/* Modal de Análise Cirúrgica & Áudio da IA */}
+      <SurgicalAnalysisModal
+        report={selectedSurgicalReport}
+        isOpen={isSurgicalModalOpen}
+        onClose={() => setIsSurgicalModalOpen(false)}
+      />
     </div>
   );
 };
