@@ -75,6 +75,7 @@ export interface ForexSignal {
   aiAnalysis?: {
     model: string;
     gateway: string;
+    documentationUrl?: string;
     brokerDataFeed: string;
     bullishScore: number;
     bearishScore: number;

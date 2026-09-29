@@ -16,7 +16,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 }) => {
   const handleHearReport = () => {
     voiceAssistant.speakText(
-      'Relatório de Performance do Trader. Acurácia geral em 94.8%, com lucro acumulado superior a 4.820 pips através das Redes Neurais Spark-X2.5 e MatrixChats IA com dados reais de corretoras. Curva de capital em constante evolução institucional sem rebaixamento significativo.'
+      'Relatório de Performance do Trader. Acurácia geral em 94.8%, com lucro acumulado superior a 4.820 pips através das Redes Neurais Grok IA (xAI) com dados reais de corretoras. Curva de capital em constante evolução institucional sem rebaixamento significativo.'
     );
   };
 
@@ -74,7 +74,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             </div>
             <p className="text-xs text-slate-400 font-mono mt-0.5">ID: #78921</p>
             <p className="text-[11px] text-cyan-300 font-semibold mt-1">
-              Licença Vitalícia Ativa • Spark-X2.5
+              Licença Vitalícia Ativa • Grok IA
             </p>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { WaveRibbon } from './WaveRibbon';
 import { CenterOrbButton } from './CenterOrbButton';
 import { PairBadgeIcon } from './PairBadgeIcon';
 import { SparkWinRatePanel } from './SparkWinRatePanel';
+import { XauFeedDiagnosticOverlay } from './XauFeedDiagnosticOverlay';
 import { SignalTimeframe, ForexSignal, formatDisplayAction } from '../../types/signals';
 import { audioAlerts } from '../../utils/audioAlerts';
 import { liveMarketFeed, RatesMap } from '../../services/liveMarketFeed';
@@ -93,6 +94,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-slate-950" />
         </button>
       </div>
+
+      {/* Real-time XAU/USD Price Feed Latency & Synchronization Diagnostic Overlay */}
+      <XauFeedDiagnosticOverlay />
 
       {/* Center Interactive Luminous Orb Button */}
       <div className="relative z-10 my-auto py-1">
@@ -270,11 +274,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   </div>
                 </div>
 
-                {/* MatrixChats IA + Spark-X2.5 Neural Engine */}
+                {/* Grok IA Neural Engine (xAI) */}
                 <div className="pt-1 border-t border-slate-800/60 flex items-center justify-between text-[8px] text-amber-300 font-bold">
                   <span className="flex items-center gap-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span>MatrixChats • Spark-X2.5</span>
+                    <span>Grok IA (xAI)</span>
                   </span>
                   <span className="text-[8px] text-emerald-400 font-mono">
                     {sig.confidence || 96}%

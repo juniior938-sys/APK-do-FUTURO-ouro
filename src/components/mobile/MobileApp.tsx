@@ -153,10 +153,10 @@ export const MobileApp: React.FC = () => {
             type="button"
             onClick={() => setIsVoiceModalOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-950 via-slate-900 to-cyan-950 border border-cyan-400/60 hover:border-cyan-300 text-xs font-bold text-cyan-300 shadow-md shadow-cyan-500/20 active:scale-95 transition"
-            title="Abrir Assistente de Voz em Tempo Real Spark-X2.5 IA"
+            title="Abrir Assistente de Voz em Tempo Real Grok IA (xAI)"
           >
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span>🎙️ Voz Spark-X2.5</span>
+            <span>🎙️ Voz Grok IA</span>
           </button>
         </div>
 
@@ -359,17 +359,17 @@ export const MobileApp: React.FC = () => {
         type="button"
         onClick={() => setIsVoiceModalOpen(true)}
         className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 via-blue-600 to-cyan-500 text-white font-extrabold text-xs shadow-xl shadow-cyan-500/40 hover:brightness-110 active:scale-95 transition border border-cyan-200/50"
-        title="Assistente de Voz Spark-X2.5 IA (Live)"
+        title="Assistente de Voz Grok IA (xAI Live)"
       >
         <span className="text-base animate-pulse">🎙️</span>
-        <span className="hidden sm:inline">Voz Spark-X2.5 (Live)</span>
+        <span className="hidden sm:inline">Voz Grok IA (Live)</span>
         <span className="sm:hidden">Voz IA</span>
       </button>
 
       {/* Live Voice Audio Status HUD */}
       <LiveVoiceAudioHUD />
 
-      {/* Spark-X2.5 Live Voice Modal */}
+      {/* Grok IA Live Voice Modal */}
       <SparkVoiceModal
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}

@@ -141,11 +141,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           </div>
         </div>
 
-        {/* Section: Redes Neurais & Corretoras (MatrixChats AI) */}
+        {/* Section: Redes Neurais & Corretoras (Grok API xAI) */}
         <div>
           <div className="flex items-center justify-between mb-2 ml-1">
             <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-              IAs & Dados de Corretoras
+              Grok IA & Dados de Corretoras
             </h2>
             <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -155,8 +155,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <div className="rounded-2xl bg-slate-900/90 border border-slate-800/90 divide-y divide-slate-800/70 p-3 shadow-md space-y-2">
             <div className="flex items-center justify-between pt-1">
               <div>
-                <span className="text-xs font-semibold text-white block">Gateway MatrixChats IA</span>
-                <span className="text-[9.5px] font-mono text-cyan-400">https://matrixchats.com/api/v1</span>
+                <span className="text-xs font-semibold text-white block">Gateway Grok IA (xAI)</span>
+                <a
+                  href="https://grok--api-apidog-io.translate.goog/?_x_tr_sl=en&_x_tr_tl=pt&_x_tr_hl=pt&_x_tr_pto=tc"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[9.5px] font-mono text-cyan-400 hover:underline flex items-center gap-1"
+                >
+                  <span>Doc Grok API (Apidog)</span>
+                  <span>↗</span>
+                </a>
               </div>
               <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
                 100% Real
@@ -174,9 +182,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <div className="flex items-center justify-between py-2">
               <div>
                 <span className="text-xs font-semibold text-white block">Motores Neurais Ativos</span>
-                <span className="text-[9.5px] font-mono text-slate-400">Spark-X2.5 + GPT-5 + Sonnet 5</span>
+                <span className="text-[9.5px] font-mono text-slate-400">Grok 2 + Grok 3 + Grok Vision (xAI)</span>
               </div>
-              <span className="text-[10px] font-mono text-amber-300 font-bold">Multi-IA</span>
+              <span className="text-[10px] font-mono text-amber-300 font-bold">xAI Engine</span>
             </div>
           </div>
         </div>

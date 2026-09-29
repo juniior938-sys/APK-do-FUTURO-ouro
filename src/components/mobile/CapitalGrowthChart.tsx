@@ -150,7 +150,7 @@ export const CapitalGrowthChart: React.FC<CapitalGrowthChartProps> = ({
             </h3>
           </div>
           <p className="text-[10px] text-slate-400 font-mono mt-0.5">
-            Curva de Equity calculada por Sinais Spark-X2.5
+            Curva de Equity calculada por Grok IA (xAI)
           </p>
         </div>
 
@@ -264,14 +264,14 @@ export const CapitalGrowthChart: React.FC<CapitalGrowthChartProps> = ({
         </ResponsiveContainer>
       </div>
 
-      {/* Footer Spark-X2.5 Attribution */}
+      {/* Footer Grok IA Attribution */}
       <div className="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[9px] font-mono text-slate-400">
         <span className="flex items-center gap-1 text-emerald-400 font-bold">
           <span>✓</span>
-          <span>Curva Auditada Spark-X2.5</span>
+          <span>Curva Auditada Grok IA (xAI)</span>
         </span>
         <span className="text-cyan-400">
-          MatrixChats IA & TradingView
+          Grok IA & TradingView
         </span>
       </div>
     </div>

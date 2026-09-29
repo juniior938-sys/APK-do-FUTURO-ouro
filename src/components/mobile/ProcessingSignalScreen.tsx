@@ -114,19 +114,19 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             timeFormatted: timeStr,
             dateTimeFormatted: `${dateStr} • ${timeStr}`,
             aiAnalysis: d.aiAnalysis || {
-              model: 'MatrixChats AI (https://matrixchats.com/api/v1) + Spark-X2.5',
-              gateway: 'https://matrixchats.com/api/v1',
+              model: 'Grok IA (xAI - https://api.x.ai/v1)',
+              gateway: 'https://api.x.ai/v1 (Apidog: https://grok--api-apidog-io.translate.goog)',
               brokerDataFeed: 'Kraken & Coinbase L2 OrderBook + TradingView Realtime',
               bullishScore: isBuy ? 96 : 4,
               bearishScore: isBuy ? 4 : 96,
               confidencePct: Number(d.confidence) || 96,
-              summary: 'Análise Multi-IA Neural • Dados em Tempo Real de Corretoras',
+              summary: 'Análise Grok IA Neural • Dados em Tempo Real de Corretoras',
             },
             pipsRisk: Math.abs(Math.round(Number(d.entryPrice) - Number(d.stopLoss))),
             pipsTarget1: Math.abs(Math.round(Number(d.takeProfit1) - Number(d.entryPrice))),
             pipsTarget2: Math.abs(Math.round(Number(d.takeProfit2) - Number(d.entryPrice))),
             pipsTarget3: Math.abs(Math.round(Number(d.takeProfit3) - Number(d.entryPrice))),
-            strategy: d.strategy || 'MatrixChats IA + Spark-X2.5 Neural Engine',
+            strategy: d.strategy || 'Grok IA Neural Engine (xAI)',
             rationale: d.rationale || 'Análise neural em tempo real com dados de corretoras e TradingView.',
             sources: {
               worldTimeServer: { session: 'Ultra-Fast HFT Live', overlap: true, status: 'OPTIMAL' },
@@ -206,7 +206,7 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
     pipsTarget1: Math.round((delta * 1.5) / (spec.pipSize || 0.0001)),
     pipsTarget2: Math.round((delta * 2.8) / (spec.pipSize || 0.0001)),
     pipsTarget3: Math.round((delta * 4.2) / (spec.pipSize || 0.0001)),
-    strategy: 'MatrixChats IA + Spark-X2.5 Neural Engine',
+    strategy: 'Grok IA Neural Engine (xAI)',
     rationale: `Análise neural em tempo real com dados de corretoras e TradingView para ${currentPair}.`,
     sources: {
       worldTimeServer: { session: 'Live Feed', overlap: true, status: 'OPTIMAL' },
@@ -279,7 +279,7 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
         {/* Real-time Checklist Steps (Enhanced with Background News Search & TradingView) */}
         <div className="w-64 mt-3 space-y-1 text-[11px] font-mono">
           <div className={`flex items-center justify-between transition-colors ${progress >= 30 ? 'text-cyan-300' : 'text-slate-500'}`}>
-            <span>Spark-X2.5 IA (XHToken)...</span>
+            <span>Grok IA Engine (xAI)...</span>
             <span className="font-bold">{progress >= 30 ? '30%...' : `${progress}%...`}</span>
           </div>
           <div className={`flex items-center justify-between transition-colors ${progress >= 68 ? 'text-cyan-300' : 'text-slate-500'}`}>
@@ -287,7 +287,7 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             <span className="font-bold">{progress >= 68 ? '68%...' : `${Math.min(progress, 68)}%...`}</span>
           </div>
           <div className={`flex items-center justify-between transition-colors ${progress >= 91 ? 'text-cyan-300' : 'text-slate-500'}`}>
-            <span>MatrixChats IA & Corretoras...</span>
+            <span>Grok API & Corretoras L2...</span>
             <span className="font-bold">{progress >= 91 ? '91%...' : progress >= 68 ? `${progress}%...` : '0%...'}</span>
           </div>
           <div className={`flex items-center justify-between transition-colors ${progress >= 100 ? 'text-emerald-400 font-bold' : 'text-slate-500'}`}>
@@ -330,7 +330,7 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
           })}
         </div>
 
-        {/* Card with Clean Precision, Date/Time, and Real MatrixChats & TradingView Data */}
+        {/* Card with Clean Precision, Date/Time, and Real Grok IA & TradingView Data */}
         <div
           className="rounded-2xl p-3 border border-amber-500/40 shadow-[0_0_16px_rgba(251,191,36,0.15)] relative"
           style={{
@@ -377,12 +377,12 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
             </div>
           </div>
 
-          {/* MatrixChats IA + Spark-X2.5 Neural Engine Banner */}
+          {/* Grok IA Neural Engine Banner */}
           <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-emerald-950/40 to-slate-900/80 rounded-lg border border-emerald-500/30 mb-2">
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-[9.5px] font-extrabold text-emerald-300 uppercase tracking-tight">
-                MatrixChats IA + Spark-X2.5 Neural
+                Grok IA Neural Engine (xAI)
               </span>
             </div>
             <span className="text-[9px] font-bold text-amber-300 font-mono">
@@ -433,7 +433,7 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
           {/* IA Accuracy Row */}
           <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-800/80 font-bold">
             <div className="flex items-center gap-1.5">
-              <span className="text-cyan-300">Acurácia MatrixChats IA</span>
+              <span className="text-cyan-300">Acurácia Grok IA (xAI)</span>
               <span className="text-[9px] text-slate-400 font-normal">Dados Reais de Corretoras L2</span>
             </div>
             <span className="text-emerald-400 text-sm drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]">
@@ -450,7 +450,7 @@ export const ProcessingSignalScreen: React.FC<ProcessingSignalScreenProps> = ({
         className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-cyan-950 via-slate-900 to-cyan-950 border border-cyan-500/50 hover:border-cyan-400 text-cyan-300 hover:text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
       >
         <span className="text-base animate-pulse">🎙️</span>
-        <span>OUVIR ANÁLISE EM VOZ (SPARK-X2.5 IA)</span>
+        <span>OUVIR ANÁLISE EM VOZ (GROK IA)</span>
       </button>
 
       {/* Bottom Action Buttons: VOLTAR / VER SINAL COMPLETO */}

@@ -111,11 +111,11 @@ export const SparkWinRatePanel: React.FC<SparkWinRatePanelProps> = ({
                 PAINEL WIN RATE IA
               </h3>
               <span className="px-1.5 py-0.2 rounded text-[8.5px] font-black bg-cyan-950 text-cyan-300 border border-cyan-500/40">
-                SPARK-X2.5
+                GROK IA
               </span>
             </div>
             <p className="text-[9.5px] text-slate-400 font-mono">
-              Taxa de Sucesso MatrixChats IA & Corretoras
+              Taxa de Sucesso Grok IA (xAI) & Corretoras L2
             </p>
           </div>
         </div>
@@ -151,7 +151,7 @@ export const SparkWinRatePanel: React.FC<SparkWinRatePanelProps> = ({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-slate-400 px-1">
           <span>Par de Moeda / Ativo</span>
-          <span>Win Rate • Spark-X2.5</span>
+          <span>Win Rate • Grok IA</span>
         </div>
 
         <div className="grid grid-cols-1 gap-1 max-h-[145px] overflow-y-auto pr-0.5 scrollbar-none">
@@ -216,3 +216,5 @@ export const SparkWinRatePanel: React.FC<SparkWinRatePanelProps> = ({
     </div>
   );
 };
+
+export const GrokWinRatePanel = SparkWinRatePanel;

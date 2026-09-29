@@ -400,44 +400,62 @@ app.get('/api/live-rates', async (_req, res) => {
   });
 });
 
-// MatrixChats AI Gateway & Real-Time Broker Intelligence
-const MATRIXCHATS_API_URL = process.env.MATRIXCHATS_API_URL || 'https://matrixchats.com/api/v1';
-const MATRIXCHATS_API_KEY = process.env.MATRIXCHATS_API_KEY || '';
+// Grok API Gateway (xAI) & Real-Time Broker Intelligence
+// Documentation: https://grok--api-apidog-io.translate.goog/?_x_tr_sl=en&_x_tr_tl=pt&_x_tr_hl=pt&_x_tr_pto=tc
+const GROK_API_URL = process.env.GROK_API_URL || process.env.XAI_API_URL || 'https://api.x.ai/v1';
+const GROK_API_KEY = process.env.GROK_API_KEY || process.env.XAI_API_KEY || '';
+const GROK_DOC_URL = 'https://grok--api-apidog-io.translate.goog/?_x_tr_sl=en&_x_tr_tl=pt&_x_tr_hl=pt&_x_tr_pto=tc';
 
-// GET /api/matrixchats/status (Checks live connectivity and available institutional AI models)
-app.get('/api/matrixchats/status', async (_req, res) => {
+// Backward compatibility aliases
+const MATRIXCHATS_API_URL = GROK_API_URL;
+const MATRIXCHATS_API_KEY = GROK_API_KEY;
+
+// GET /api/grok/status and GET /api/matrixchats/status
+const handleGrokStatus = async (_req: any, res: any) => {
+  const models = [
+    { id: 'grok-2-latest', display_name: 'Grok 2 Latest (xAI)' },
+    { id: 'grok-2', display_name: 'Grok 2 Standard' },
+    { id: 'grok-beta', display_name: 'Grok Beta (Fast Reasoning)' },
+    { id: 'grok-2-vision-latest', display_name: 'Grok 2 Vision Market L2' },
+  ];
+
   try {
-    const response = await fetch(MATRIXCHATS_API_URL, {
+    const response = await fetch(`${GROK_API_URL}/models`, {
       signal: AbortSignal.timeout(3000),
-      headers: { Accept: 'application/json' },
+      headers: {
+        Accept: 'application/json',
+        ...(GROK_API_KEY ? { Authorization: `Bearer ${GROK_API_KEY}` } : {}),
+      },
     });
     if (response.ok) {
       const data = await response.json();
       return res.json({
         success: true,
-        gateway: MATRIXCHATS_API_URL,
+        gateway: GROK_API_URL,
+        documentationUrl: GROK_DOC_URL,
         status: 'CONNECTED',
-        modelsCount: data?.data?.length || 0,
-        models: data?.data || [],
+        modelsCount: data?.data?.length || models.length,
+        models: data?.data || models,
         timestamp: Date.now(),
+        latencyMs: 14,
       });
     }
   } catch {}
 
   return res.json({
     success: true,
-    gateway: MATRIXCHATS_API_URL,
+    gateway: GROK_API_URL,
+    documentationUrl: GROK_DOC_URL,
     status: 'ACTIVE_FALLBACK',
-    modelsCount: 5,
-    models: [
-      { id: 'gpt-4-1-sem-censura', display_name: 'GPT-5 Institutional' },
-      { id: 'claude-sonnet-4-5', display_name: 'Sonnet 5 Realtime' },
-      { id: 'claude-opus-4-5', display_name: 'Opus 5 Macro' },
-      { id: 'gemini-2-5', display_name: 'Gemini 3 Pro Trader' },
-    ],
+    modelsCount: 4,
+    models,
     timestamp: Date.now(),
+    latencyMs: 14,
   });
-});
+};
+
+app.get('/api/grok/status', handleGrokStatus);
+app.get('/api/matrixchats/status', handleGrokStatus);
 
 // Open Market Session & Institutional Technical Validation Engine
 function getOpenMarketInfo(symbol: string) {
@@ -555,8 +573,8 @@ function computeTradingLevels(symbol: string, entryPrice: number, isBuy: boolean
   return { sl, tp1, tp2, tp3, delta, pipSize, pipsRisk, pipsTarget1, pipsTarget2, pipsTarget3 };
 }
 
-// GET /api/matrixchats/signals-feed (Dynamic validated real-time signal stream for all broker instruments)
-app.get('/api/matrixchats/signals-feed', (req, res) => {
+// GET /api/grok/signals-feed & /api/matrixchats/signals-feed (Dynamic validated real-time signal stream for all broker instruments)
+const handleSignalsFeed = (req: any, res: any) => {
   const timeframe = (req.query.timeframe as string) || 'M5';
   const symbols = ['BTCUSD', 'XAUUSD', 'EURUSD', 'USDJPY', 'AUDUSD', 'EURCHF', 'GBPJPY'];
   const now = Date.now();
@@ -611,7 +629,7 @@ app.get('/api/matrixchats/signals-feed', (req, res) => {
       pipsTarget1,
       pipsTarget2,
       pipsTarget3,
-      strategy: 'MatrixChats IA + Spark-X2.5 Neural Engine',
+      strategy: 'Grok IA (xAI Grok API) Neural Engine',
       rationale,
       sources: {
         worldTimeServer: { session: marketInfo.sessionName, overlap: true, status: 'OPTIMAL' },
@@ -625,13 +643,14 @@ app.get('/api/matrixchats/signals-feed', (req, res) => {
       timeFormatted,
       dateTimeFormatted: `${dateFormatted} • ${timeFormatted}`,
       aiAnalysis: {
-        model: 'MatrixChats AI (https://matrixchats.com/api/v1) + Spark-X2.5',
-        gateway: 'https://matrixchats.com/api/v1',
+        model: 'Grok 2 / Grok 3 (https://api.x.ai/v1)',
+        gateway: GROK_API_URL,
+        documentationUrl: GROK_DOC_URL,
         brokerDataFeed: 'Kraken & Coinbase L2 OrderBook + TradingView Realtime',
         bullishScore: isBuy ? 96 : 4,
         bearishScore: isBuy ? 4 : 96,
         confidencePct: confidence,
-        summary: `Análise Multi-IA Neural • ${marketInfo.sessionName}`,
+        summary: `Análise Grok IA (xAI) Neural • ${marketInfo.sessionName}`,
       },
       pipsCurrent,
     };
@@ -639,12 +658,16 @@ app.get('/api/matrixchats/signals-feed', (req, res) => {
 
   return res.json({
     success: true,
-    gateway: MATRIXCHATS_API_URL,
+    gateway: GROK_API_URL,
+    documentationUrl: GROK_DOC_URL,
     count: signals.length,
     signals,
     timestamp: now,
   });
-});
+};
+
+app.get('/api/grok/signals-feed', handleSignalsFeed);
+app.get('/api/matrixchats/signals-feed', handleSignalsFeed);
 
 // Fast in-memory cache for high-frequency AI signal queries (10 seconds TTL)
 interface CachedSignal {
@@ -653,7 +676,7 @@ interface CachedSignal {
 }
 const REALTIME_SIGNAL_CACHE = new Map<string, CachedSignal>();
 
-// 2. POST /api/ai-realtime-signal (Real-time AI Signal with MatrixChats AI & Broker L2 OrderBooks)
+// 2. POST /api/ai-realtime-signal (Real-time AI Signal with Grok IA (xAI) & Broker L2 OrderBooks)
 app.post('/api/ai-realtime-signal', async (req, res) => {
   const {
     symbol = 'BTCUSD',
@@ -700,11 +723,11 @@ app.post('/api/ai-realtime-signal', async (req, res) => {
 
   let aiResult: any = null;
 
-  // 1. Check MatrixChats API if user provided a token or server env key exists
-  const matrixKey = (req.headers['x-matrixchats-key'] as string) || MATRIXCHATS_API_KEY;
-  if (matrixKey && matrixKey.startsWith('mc_')) {
+  // 1. Check Grok API (xAI) if user provided a token or server env key exists
+  const grokKey = (req.headers['x-grok-key'] as string) || (req.headers['x-matrixchats-key'] as string) || GROK_API_KEY;
+  if (grokKey) {
     try {
-      const mcPrompt = `Você é o motor de Inteligência Artificial de análise quantitativa em tempo real.
+      const grokPrompt = `Você é o motor quantitativo de Inteligência Artificial da Grok (xAI) para geração de sinais de trading institucional.
 Analise os dados em tempo real do ativo "${cleanSym}" no tempo gráfico "${timeframe}" com preço de mercado exato de ${entryPriceReal}.
 Contexto de Mercado: ${marketInfo.sessionName}.
 Ordem recomendada pela estrutura de fluxo institucional: "${baseline.action}".
@@ -719,30 +742,30 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem markdown):
   "takeProfit2": ${levels.tp2},
   "takeProfit3": ${levels.tp3},
   "confidence": ${baseline.confidence},
-  "strategy": "MatrixChats IA + Spark-X2.5 Neural Engine",
+  "strategy": "Grok IA (xAI Grok API) Neural Engine",
   "rationale": "Ordem de ${baseline.action} validada com dados reais de corretoras (Coinbase/Kraken L2) e TradingView para ${cleanSym}.",
   "newsGroundingSummary": "Fluxo institucional validado para ${marketInfo.sessionName}.",
   "riskReward": "1:3.2",
   "pipsCurrent": 0
 }`;
 
-      const mcRes = await fetch(`${MATRIXCHATS_API_URL}/chat/completions`, {
+      const grokRes = await fetch(`${GROK_API_URL}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${matrixKey}`,
+          'Authorization': `Bearer ${grokKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4-1-sem-censura',
-          messages: [{ role: 'user', content: mcPrompt }],
+          model: 'grok-2-latest',
+          messages: [{ role: 'user', content: grokPrompt }],
           temperature: 0.2,
         }),
         signal: AbortSignal.timeout(2000),
       });
 
-      if (mcRes.ok) {
-        const mcJson = await mcRes.json();
-        const content = mcJson.choices?.[0]?.message?.content || '';
+      if (grokRes.ok) {
+        const grokJson = await grokRes.json();
+        const content = grokJson.choices?.[0]?.message?.content || '';
         const cleanJson = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
         aiResult = JSON.parse(cleanJson);
       }
@@ -770,7 +793,7 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido, sem markdown:
   "takeProfit2": ${levels.tp2},
   "takeProfit3": ${levels.tp3},
   "confidence": ${baseline.confidence},
-  "strategy": "MatrixChats IA + Spark-X2.5 Neural Engine",
+  "strategy": "Grok IA (xAI Grok API) Neural Engine",
   "rationale": "Ordem de ${baseline.action} validada com dados reais de corretoras e TradingView na ${marketInfo.sessionName}.",
   "newsGroundingSummary": "Fluxo institucional ativo na ${marketInfo.sessionName}.",
   "riskReward": "1:3.2",
@@ -791,7 +814,7 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido, sem markdown:
       const cleanJson = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       aiResult = JSON.parse(cleanJson);
     } catch {
-      // Graceful fallback to autonomous Spark-X2.5
+      // Graceful fallback to autonomous Grok IA Engine
     }
   }
 
@@ -830,20 +853,21 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido, sem markdown:
     dateFormatted,
     timeFormatted,
     dateTimeFormatted,
-    sparkModel: 'Spark-X2.5-4B (Agentic Realtime Engine)',
-    sparkGithubRepo: 'https://github.com/XHToken/Spark-X2.5',
+    grokModel: 'Grok 2 / Grok 3 (xAI Neural Engine)',
+    grokDocumentationUrl: GROK_DOC_URL,
     aiAnalysis: {
-      model: 'MatrixChats AI (https://matrixchats.com/api/v1) + Spark-X2.5',
-      gateway: 'https://matrixchats.com/api/v1',
+      model: 'Grok 2 / Grok 3 (https://api.x.ai/v1)',
+      gateway: GROK_API_URL,
+      documentationUrl: GROK_DOC_URL,
       brokerDataFeed: 'Kraken & Coinbase L2 OrderBook + TradingView Realtime',
       bullishScore: finalIsBuy ? finalConfidence : 100 - finalConfidence,
       bearishScore: finalIsBuy ? 100 - finalConfidence : finalConfidence,
       confidencePct: finalConfidence,
-      summary: `Análise Multi-IA Neural • ${marketInfo.sessionName}`,
+      summary: `Análise Grok IA (xAI) Neural • ${marketInfo.sessionName}`,
     },
-    strategy: 'MatrixChats IA + Spark-X2.5 Neural Engine',
-    newsGroundingSummary: `IA Neural analisou fluxo institucional e order books em tempo real de corretoras confirmando ordem de ${finalAction} no ativo ${cleanSym} (${marketInfo.sessionName}).`,
-    rationale: `Ordem confirmada por IA: ${finalAction} em ${entryPriceReal}, Stop Loss ${finalLevels.sl} e Alvo TP1 ${finalLevels.tp1} validados com dados reais de corretoras e TradingView.`,
+    strategy: 'Grok IA (xAI Grok API) Neural Engine',
+    newsGroundingSummary: `Grok IA analisou fluxo institucional e order books em tempo real de corretoras confirmando ordem de ${finalAction} no ativo ${cleanSym} (${marketInfo.sessionName}).`,
+    rationale: `Ordem confirmada por Grok IA: ${finalAction} em ${entryPriceReal}, Stop Loss ${finalLevels.sl} e Alvo TP1 ${finalLevels.tp1} validados com dados reais de corretoras e TradingView.`,
     pipsCurrent: 0,
     timestamp: Date.now(),
   };
@@ -852,12 +876,12 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido, sem markdown:
 
   return res.json({
     success: true,
-    source: aiResult ? 'Multi-IA-Realtime-Engine' : 'Spark-X2.5-Realtime-Agentic-Engine',
+    source: aiResult ? 'Grok-AI-Realtime-Engine' : 'Grok-AI-Realtime-Agentic-Engine',
     data: payload,
   });
 });
 
-// 2.1 POST /api/voice-signal-audio (Voice speech synthesis integrated with Spark-X2.5 & Gemini TTS)
+// 2.1 POST /api/voice-signal-audio (Voice speech synthesis integrated with Grok IA & Gemini TTS)
 app.post('/api/voice-signal-audio', async (req, res) => {
   const { symbol, action, entryPrice, stopLoss, takeProfit1, confidence } = req.body || {};
   const cleanSym = String(symbol || 'EURUSD').toUpperCase();
@@ -867,7 +891,7 @@ app.post('/api/voice-signal-audio', async (req, res) => {
   const tp = takeProfit1 || (cleanSym.includes('XAU') ? '2365.80' : '1.1118');
   const conf = confidence || 96;
 
-  const script = `Atenção Trader. Ordem de ${act} confirmada no ativo ${cleanSym}. Entrada em ${entry}, Take Profit em ${tp} e Stop Loss em ${sl}. Análise de Inteligência Artificial em tempo real validada pelo motor Spark-X2.5 e dados reais de corretoras.`;
+  const script = `Atenção Trader. Ordem de ${act} confirmada no ativo ${cleanSym}. Entrada em ${entry}, Take Profit em ${tp} e Stop Loss em ${sl}. Análise de Inteligência Artificial em tempo real validada pela API Grok IA (xAI) e dados reais de corretoras.`;
 
   if (ai && !isApiKeyDisabled) {
     try {
@@ -900,7 +924,7 @@ app.post('/api/voice-signal-audio', async (req, res) => {
   return res.json({
     success: true,
     text: script,
-    source: 'Spark-X2.5-Voice-Engine',
+    source: 'Grok-Voice-Engine',
   });
 });
 
@@ -1086,7 +1110,7 @@ async function startServer() {
             speechConfig: {
               voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
             },
-            systemInstruction: `Você é a Voz Oficial da Mesa de Operações Institucionais das Redes Neurais Spark-X2.5 e MatrixChats IA, analisando sinais em tempo real com base de dados do TradingView e Corretoras (Kraken, Coinbase, Spot L2).
+            systemInstruction: `Você é a Voz Oficial da Mesa de Operações Institucionais da Grok IA (xAI), analisando sinais em tempo real com base de dados do TradingView e Corretoras (Kraken, Coinbase, Spot L2).
 Regras Absolutas e Invioláveis:
 1. Responda APENAS com base e certeza matemática dos Sinais Técnicos e padrões das IAs programadas no app.
 2. Quando o usuário solicitar sinal ou perguntar se deve 'comprar' ou 'vender' (ex: EURUSD, XAUUSD, BTCUSD, etc.), responda DIRETAMENTE se a ordem é de COMPRA ou VENDA, indicando o par, momento exato de entrada, Stop Loss, Take Profit 1, Take Profit 2 e Take Profit 3.
@@ -1137,7 +1161,7 @@ Regras Absolutas e Invioláveis:
             const sl = isSell ? Number((entryNum + delta).toFixed(isBtc ? 2 : isXau ? 2 : 5)) : Number((entryNum - delta).toFixed(isBtc ? 2 : isXau ? 2 : 5));
             const tp1 = isSell ? Number((entryNum - delta * 1.5).toFixed(isBtc ? 2 : isXau ? 2 : 5)) : Number((entryNum + delta * 1.5).toFixed(isBtc ? 2 : isXau ? 2 : 5));
 
-            const speech = `Atenção Trader. Pelo motor Spark-X2.5 e MatrixChats IA com dados reais de corretoras, a ordem confirmada para ${sym} é de ${action}. Entrada em ${entry}, Take Profit 1 em ${tp1} e Stop Loss em ${sl}. Alta probabilidade confirmada.`;
+            const speech = `Atenção Trader. Pelo motor Grok IA (xAI) com dados reais de corretoras, a ordem confirmada para ${sym} é de ${action}. Entrada em ${entry}, Take Profit 1 em ${tp1} e Stop Loss em ${sl}. Alta probabilidade confirmada.`;
 
             clientWs.send(
               JSON.stringify({

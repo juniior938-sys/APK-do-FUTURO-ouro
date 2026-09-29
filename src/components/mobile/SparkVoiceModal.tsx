@@ -17,8 +17,8 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
   const [messages, setMessages] = useState<VoiceMessage[]>([
     {
       id: 'welcome',
-      sender: 'spark_ai',
-      text: 'Voz Institucional Multi-IA (Spark-X2.5 & MatrixChats). Pergunte diretamente se deve Comprar ou Vender para receber o sinal exato validado com dados reais de corretoras.',
+      sender: 'grok_ai',
+      text: 'Voz Institucional Grok IA (xAI API). Pergunte diretamente se deve Comprar ou Vender para receber o sinal exato validado com dados reais de corretoras.',
       timestamp: Date.now(),
     },
   ]);
@@ -29,7 +29,7 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
   // Web Speech API Native Parameters: Rate (Taxa) & Pitch (Tom)
   const [rate, setRate] = useState<number>(() => {
     try {
-      const saved = localStorage.getItem('spark_voice_rate');
+      const saved = localStorage.getItem('spark_voice_rate') || localStorage.getItem('grok_voice_rate');
       return saved ? parseFloat(saved) : 1.05;
     } catch {
       return 1.05;
@@ -38,7 +38,7 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
 
   const [pitch, setPitch] = useState<number>(() => {
     try {
-      const saved = localStorage.getItem('spark_voice_pitch');
+      const saved = localStorage.getItem('spark_voice_pitch') || localStorage.getItem('grok_voice_pitch');
       return saved ? parseFloat(saved) : 1.0;
     } catch {
       return 1.0;
@@ -48,7 +48,7 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>(() => {
     try {
-      return localStorage.getItem('spark_voice_uri') || '';
+      return localStorage.getItem('grok_voice_uri') || localStorage.getItem('spark_voice_uri') || '';
     } catch {
       return '';
     }
@@ -137,7 +137,7 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
   const handleTestVoice = () => {
     audioAlerts.playVoiceActivationChime();
     speakSignalWithWebSpeech(
-      `Motor Spark-X2.5 calibrado. Taxa de fala em ${rate.toFixed(2)} e tom em ${pitch.toFixed(2)}. Redes Neurais ativas com leitura de dados em tempo real prontas para operações.`
+      `Motor Grok IA calibrado. Taxa de fala em ${rate.toFixed(2)} e tom em ${pitch.toFixed(2)}. Redes Neurais xAI ativas com leitura de dados em tempo real prontas para operações.`
     );
   };
 
@@ -174,14 +174,14 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-black text-white tracking-wide">
-                  VOZ SPARK-X2.5 IA
+                  VOZ GROK IA (xAI)
                 </span>
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">
                   WEB SPEECH NATIVA
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 font-mono">
-                Taxa: {rate.toFixed(2)}x • Tom: {pitch.toFixed(2)}x • Multi-IA
+                Taxa: {rate.toFixed(2)}x • Tom: {pitch.toFixed(2)}x • Grok API
               </p>
             </div>
           </div>
@@ -395,10 +395,10 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
               <span>₿</span>
             </button>
             <button
-              onClick={() => handleAsk('Status da IA Neural e Corretoras')}
+              onClick={() => handleAsk('Status da Grok IA e Corretoras')}
               className="px-2 py-1.5 rounded bg-slate-900 hover:bg-purple-950 border border-slate-700 hover:border-purple-400 text-[10px] font-bold text-purple-300 text-left transition flex items-center justify-between active:scale-95"
             >
-              <span>MatrixChats IA & Corretoras</span>
+              <span>Grok IA (xAI) & Corretoras</span>
               <span>📊</span>
             </button>
           </div>
@@ -413,7 +413,7 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
             >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                  {m.sender === 'user' ? 'Você' : 'Spark-X2.5 IA'}
+                  {m.sender === 'user' ? 'Você' : 'Grok IA (xAI)'}
                 </span>
                 {m.action && (
                   <span
@@ -435,7 +435,7 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
                 <div>{m.text}</div>
 
                 {/* Instant Replay Voice Button */}
-                {m.sender === 'spark_ai' && (
+                {(m.sender === 'spark_ai' || m.sender === 'grok_ai') && (
                   <div className="mt-2 pt-1.5 border-t border-slate-800/80 flex items-center justify-between">
                     <button
                       type="button"
@@ -484,3 +484,5 @@ export const SparkVoiceModal: React.FC<SparkVoiceModalProps> = ({
     </div>
   );
 };
+
+export const GrokVoiceModal = SparkVoiceModal;

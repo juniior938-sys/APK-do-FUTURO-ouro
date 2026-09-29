@@ -4,7 +4,7 @@ import { ForexSignal, SignalTimeframe, formatDisplayAction } from '../../types/s
 import { audioAlerts } from '../../utils/audioAlerts';
 import { voiceAssistant } from '../../services/voiceAssistant';
 import { liveMarketFeed } from '../../services/liveMarketFeed';
-import { matrixChatsService, MatrixChatsStatus } from '../../services/matrixChatsService';
+import { grokApiService, GrokApiStatus } from '../../services/grokApiService';
 
 interface SignalListScreenProps {
   signals?: ForexSignal[];
@@ -27,7 +27,7 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
   );
   const [feedSignals, setFeedSignals] = useState<ForexSignal[]>(initialSignals && initialSignals.length > 0 ? initialSignals : []);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
-  const [mcStatus, setMcStatus] = useState<MatrixChatsStatus>(matrixChatsService.getStatus());
+  const [grokStatus, setGrokStatus] = useState<GrokApiStatus>(grokApiService.getStatus());
   const [lastSyncTime, setLastSyncTime] = useState<string>('Agora');
 
   // Sync initial symbol filter from props
@@ -37,17 +37,17 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
     }
   }, [initialSymbolFilter]);
 
-  // Subscribe to MatrixChats Gateway status updates
+  // Subscribe to Grok API Gateway status updates
   useEffect(() => {
-    const unsub = matrixChatsService.subscribeStatus((st) => setMcStatus(st));
+    const unsub = grokApiService.subscribeStatus((st) => setGrokStatus(st));
     return unsub;
   }, []);
 
-  // Fetch initial dynamic feed from MatrixChats API
+  // Fetch initial dynamic feed from Grok API
   const loadDynamicFeed = useCallback(async (tf: SignalTimeframe = 'M5', force: boolean = false) => {
     setIsRefreshing(true);
     try {
-      const dynamicList = await matrixChatsService.fetchDynamicFeed(tf, force);
+      const dynamicList = await grokApiService.fetchDynamicFeed(tf, force);
       if (dynamicList && dynamicList.length > 0) {
         setFeedSignals(dynamicList);
         if (onUpdateSignals) onUpdateSignals(dynamicList);
@@ -72,7 +72,7 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
         if (!prev || prev.length === 0) return prev;
         return prev.map((sig) => {
           const livePrice = liveMarketFeed.getPrice(sig.symbol) || sig.currentPrice;
-          const realPips = matrixChatsService.calculateRealPips(sig.symbol, sig.entryPrice, livePrice, sig.action);
+          const realPips = grokApiService.calculateRealPips(sig.symbol, sig.entryPrice, livePrice, sig.action);
           if (livePrice === sig.currentPrice && realPips === sig.pipsCurrent) {
             return sig;
           }
@@ -140,8 +140,8 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
           className={`w-8 h-8 rounded-full flex items-center justify-center text-amber-400 hover:text-amber-300 hover:bg-slate-800/60 active:scale-95 transition-all -mr-2 ${
             isRefreshing ? 'animate-spin opacity-70' : ''
           }`}
-          title="Sincronizar Feed com MatrixChats"
-          aria-label="Sincronizar Feed com MatrixChats"
+          title="Sincronizar Feed com Grok IA (xAI)"
+          aria-label="Sincronizar Feed com Grok IA (xAI)"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none" stroke="currentColor" strokeWidth="2.2">
             <path d="M23 4v6h-6" />
@@ -151,7 +151,7 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
         </button>
       </div>
 
-      {/* MatrixChats Live Gateway Banner */}
+      {/* Grok IA Live Gateway Banner (xAI) */}
       <div className="mb-2 shrink-0 bg-gradient-to-r from-emerald-950/50 via-slate-900/80 to-cyan-950/50 border border-emerald-500/30 rounded-xl px-2.5 py-1.5 shadow-[0_0_12px_rgba(16,185,129,0.12)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
@@ -160,7 +160,7 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
             <span className="text-[10px] font-extrabold text-emerald-300 tracking-wide">
-              MatrixChats IA Gateway
+              Grok IA Gateway (xAI)
             </span>
             <span className="text-[8px] font-mono font-bold px-1 py-0.2 bg-emerald-500/20 text-emerald-300 rounded border border-emerald-500/40">
               AO VIVO
@@ -244,7 +244,7 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
               onClick={handleManualRefresh}
               className="px-3 py-1 bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-[10px] rounded-lg font-bold hover:bg-cyan-900/90 transition"
             >
-              Consultar MatrixChats Agora
+              Consultar Grok IA Agora
             </button>
           </div>
         ) : (
@@ -321,12 +321,12 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
                   </div>
                 </div>
 
-                {/* MatrixChats IA & Broker Verification Banner */}
+                {/* Grok IA & Broker Verification Banner */}
                 <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-emerald-950/30 via-slate-900/70 to-cyan-950/30 rounded-lg border border-emerald-500/25 mb-2">
                   <div className="flex items-center gap-1.5 truncate pr-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
                     <span className="text-[8.5px] font-bold text-emerald-300 truncate font-mono">
-                      MatrixChats AI • Broker L2 Validado
+                      Grok IA (xAI) • Broker L2 Validado
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
@@ -395,7 +395,7 @@ export const SignalListScreen: React.FC<SignalListScreenProps> = ({
       {/* Bottom Footer indicator */}
       <div className="flex items-center justify-center gap-1 pt-1 shrink-0 text-slate-500 text-[8.5px] font-mono">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-        <span>Feed validado via MatrixChats API Gateway</span>
+        <span>Feed validado via Grok IA API Gateway (xAI)</span>
       </div>
     </div>
   );

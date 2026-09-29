@@ -120,12 +120,12 @@ Probabilidade: ${signal.confidence}%`;
         </div>
       </div>
 
-      {/* MatrixChats IA + Spark-X2.5 Neural Engine */}
+      {/* Grok IA (xAI) Neural Engine */}
       <div className="flex items-center justify-between px-2.5 py-1.5 rounded bg-slate-900/90 border border-emerald-500/30 text-[10px]">
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span className="font-extrabold text-emerald-300">
-            MatrixChats IA + Spark-X2.5 Neural
+            Grok IA (xAI) Neural Engine
           </span>
         </div>
         <div className="flex items-center gap-2">

@@ -40,7 +40,7 @@ export const LiveVoiceAudioHUD: React.FC = () => {
             {state.currentText}
           </p>
           <span className="text-[8.5px] font-mono text-emerald-400 block">
-            ● Transmitindo Áudio Spark-X2.5
+            ● Transmitindo Áudio Grok IA (xAI)
           </span>
         </div>
 

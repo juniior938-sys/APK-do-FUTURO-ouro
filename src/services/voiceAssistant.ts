@@ -1,10 +1,10 @@
-// Voice Assistant Service integrated with Spark-X2.5 IA & Gemini 3.8 Live API
+// Voice Assistant Service integrated with Grok IA (xAI) & Web Speech API
 import { ForexSignal } from '../types/signals';
 import { audioAlerts } from '../utils/audioAlerts';
 
 export interface VoiceMessage {
   id: string;
-  sender: 'user' | 'spark_ai';
+  sender: 'user' | 'grok_ai' | 'spark_ai';
   text: string;
   timestamp: number;
   action?: 'BUY' | 'SELL' | 'NEUTRAL' | 'Buy Forte' | 'Sell Forte';
@@ -333,7 +333,7 @@ class SparkVoiceEngine {
     const sl = signal.stopLoss;
     const conf = signal.confidence || 96;
 
-    const speechText = `Atenção trader: Ordem de ${actionPt} confirmada para ${symbolClean} no tempo gráfico ${signal.timeframe}. Entrada em ${entry}, Take Profit em ${tp1} e Stop Loss em ${sl}. Análise de Inteligência Artificial em tempo real validada pelo motor Spark-X2.5 e MatrixChats IA.`;
+    const speechText = `Atenção trader: Ordem de ${actionPt} confirmada para ${symbolClean} no tempo gráfico ${signal.timeframe}. Entrada em ${entry}, Take Profit em ${tp1} e Stop Loss em ${sl}. Análise de Inteligência Artificial em tempo real validada pela API Grok IA (xAI).`;
 
     // 1. Unlock AudioContext & play sound immediately inside user gesture
     this.unlockAudio();
@@ -360,14 +360,14 @@ class SparkVoiceEngine {
 
         // Play welcome sound and initial prompt
         this.speakText(
-          'Rede Neural Multi-IA Spark-X2.5 e MatrixChats Ativas. Pergunte se deve Comprar ou Vender qualquer par com base em dados reais de corretoras.'
+          'Rede Neural Grok IA (xAI) Ativa. Pergunte se deve Comprar ou Vender qualquer par com base em dados reais de corretoras.'
         );
 
         if (this.onMessageCallback) {
           this.onMessageCallback({
             id: 'init-msg',
-            sender: 'spark_ai',
-            text: 'Rede Neural Multi-IA Spark-X2.5 e MatrixChats Ativas. Pergunte se deve Comprar ou Vender qualquer par com base em dados reais de corretoras.',
+            sender: 'grok_ai',
+            text: 'Rede Neural Grok IA (xAI) Ativa. Pergunte se deve Comprar ou Vender qualquer par com base em dados reais de corretoras.',
             timestamp: Date.now(),
           });
         }
@@ -406,7 +406,7 @@ class SparkVoiceEngine {
             if (this.onMessageCallback) {
               this.onMessageCallback({
                 id: `ai-${Date.now()}`,
-                sender: 'spark_ai',
+                sender: 'grok_ai',
                 text: txt,
                 timestamp: Date.now(),
                 action: msg.signal?.action,
@@ -476,7 +476,7 @@ class SparkVoiceEngine {
     if (this.onMessageCallback) {
       this.onMessageCallback({
         id: `ai-${Date.now()}`,
-        sender: 'spark_ai',
+        sender: 'grok_ai',
         text: respText,
         timestamp: Date.now(),
         action: action as 'BUY' | 'SELL',
